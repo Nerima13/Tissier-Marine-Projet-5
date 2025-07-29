@@ -9,40 +9,42 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.openclassrooms.SafetyNetAlerts.model.MedicalRecord;
 import com.openclassrooms.SafetyNetAlerts.service.impl.MedicalRecordServiceImpl;
 
 @RestController
+@RequestMapping("/medicalRecord")
 public class MedicalRecordController {
 	private static Logger logger = LogManager.getLogger(MedicalRecordController.class);
 	
 	@Autowired
 	private MedicalRecordServiceImpl medicalRecordService;
 
-	@PostMapping("/medicalRecord")
+	@PostMapping("")
 	public void createMedicalRecord(MedicalRecord medicalRecord) {
 		logger.info("createMedicalRecord called");
 		medicalRecordService.add(medicalRecord);
 		logger.info("MedicalRecord successfully created" + medicalRecord.toString());
 	}
 	
-	@DeleteMapping("/medicalRecord")
+	@DeleteMapping("")
 	public void deleteMedicalRecord(MedicalRecord medicalRecord) {
 		logger.info("deleteMedicalRecord called");
 		medicalRecordService.delete(medicalRecord);
 		logger.info("MedicalRecord successfully deleted" + medicalRecord.toString());
 	}
 	
-	@PutMapping("/medicalRecord")
+	@PutMapping("")
 	public void updateMedicalRecord(MedicalRecord medicalRecord) {
 		logger.info("updateMedicalRecord called");
 		medicalRecordService.update(medicalRecord);
 		logger.info("MedicalRecord successfully updated" + medicalRecord.toString());
 	}
 	
-	@GetMapping("/medicalRecord")
+	@GetMapping("")
 	public MedicalRecord getMedicalRecord(MedicalRecord medicalRecord) {
 		logger.info("getMedicalRecord called");
 		medicalRecordService.get(medicalRecord);

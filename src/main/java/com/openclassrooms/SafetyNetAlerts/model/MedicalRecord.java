@@ -2,24 +2,29 @@ package com.openclassrooms.SafetyNetAlerts.model;
 
 import java.util.List;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+
+@EqualsAndHashCode
 public class MedicalRecord {
+	
 	private String firstName;
+	
 	private String lastName;
+	
+	@EqualsAndHashCode.Exclude
 	private String birthdate;
+	
+	@EqualsAndHashCode.Exclude
 	private List<String> medications;
+	
+	@EqualsAndHashCode.Exclude
 	private List<String> allergies;
 	
-	public MedicalRecord(String firstName, String lastName, String birthdate, List<String> medications, List<String> allergies) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.birthdate = birthdate;
-        this.medications = medications;
-        this.allergies = allergies;
-	}
-	
-	public MedicalRecord() {
-	}
 }

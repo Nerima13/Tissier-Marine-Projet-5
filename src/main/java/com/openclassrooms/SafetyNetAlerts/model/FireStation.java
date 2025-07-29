@@ -1,17 +1,20 @@
 package com.openclassrooms.SafetyNetAlerts.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+
+@EqualsAndHashCode
 public class FireStation {
+	
 	private String address;
+	
+	@EqualsAndHashCode.Exclude
 	private int station;
 	
-	public FireStation(String address, int station) {
-		this.address = address;
-		this.station = station;
-	}
-	
-	public FireStation() {
-	}
 }

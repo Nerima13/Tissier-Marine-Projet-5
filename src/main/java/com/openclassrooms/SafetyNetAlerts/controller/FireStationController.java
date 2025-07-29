@@ -9,12 +9,14 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.openclassrooms.SafetyNetAlerts.model.FireStation;
 import com.openclassrooms.SafetyNetAlerts.service.impl.FireStationServiceImpl;
 
 @RestController
+@RequestMapping("/firestation")
 public class FireStationController {
 	
 	private static Logger logger = LogManager.getLogger(FireStationController.class);
@@ -22,28 +24,28 @@ public class FireStationController {
 	@Autowired
 	private FireStationServiceImpl fireStationService;
 	
-	@PostMapping("/firestation")
+	@PostMapping("")
 	public void createFireStation(FireStation fireStation) {
 		logger.info("createFireStation called");
 		fireStationService.add(fireStation);
 		logger.info("Firestation successfully created" + fireStation.toString());
 	}
 		
-	@DeleteMapping("/firestation")
+	@DeleteMapping("")
 	public void deleteFireStation(FireStation fireStation) {
 		logger.info("deleteFireStation called");
 		fireStationService.delete(fireStation);
 		logger.info("Firestation successfully deleted" + fireStation.toString());
 	}
 		
-	@PutMapping("/firestation")
+	@PutMapping("")
 	public void updateFireStation(FireStation fireStation) {
 		logger.info("updateFireStation called");
 		fireStationService.update(fireStation);
 		logger.info("Firestation successfully updated" + fireStation.toString());
 	}
 		
-	@GetMapping("/firestation")
+	@GetMapping("")
 	public FireStation getFireStation(FireStation fireStation) {
 		logger.info("getFireStation called");
 		fireStationService.get(fireStation);

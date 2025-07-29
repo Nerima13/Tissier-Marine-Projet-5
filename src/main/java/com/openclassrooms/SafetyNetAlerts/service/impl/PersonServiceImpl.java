@@ -12,8 +12,12 @@ import com.openclassrooms.SafetyNetAlerts.service.PersonService;
 @Service
 public class PersonServiceImpl implements PersonService {
 
-	@Autowired
     private PersonRepository personRepository;
+    
+    @Autowired
+    public PersonServiceImpl(PersonRepository personRepository) {
+    	this.personRepository = personRepository;
+    }
 
     @Override
     public void add(Person element) {

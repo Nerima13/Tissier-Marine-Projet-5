@@ -1,27 +1,35 @@
 package com.openclassrooms.SafetyNetAlerts.model;
 
+
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+
+@EqualsAndHashCode
 public class Person {
+	
 	private String firstName;
+	
 	private String lastName;
+	
+	@EqualsAndHashCode.Exclude
 	private String address;
+	
+	@EqualsAndHashCode.Exclude
 	private String city;
+	
+	@EqualsAndHashCode.Exclude
 	private int zip;
+	
+	@EqualsAndHashCode.Exclude
 	private String phone;
+	
+	@EqualsAndHashCode.Exclude
 	private String email;
 	
-	public Person(String firstName, String lastName, String address, String city, int zip, String phone, String email) {
-		this.firstName = firstName;
-		this.lastName = lastName;
-		this.address = address;
-		this.city = city;
-		this.zip = zip;
-		this.phone = phone;
-		this.email = email;
-	}
-	
-	public Person() {
-	}
 }
