@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Repository;
 
 import com.openclassrooms.SafetyNetAlerts.model.Person;
@@ -14,8 +16,14 @@ import com.openclassrooms.SafetyNetAlerts.repository.PersonRepository;
 public class PersonRepositoryImpl implements PersonRepository {
 	
 	private static Logger logger = LogManager.getLogger(PersonRepositoryImpl.class);
-	private List<Person> persons = new ArrayList<>();
+	private final List<Person> persons = new ArrayList<>();
 	
+	@Bean
+	@Scope("singleton")
+	public PersonRepositoryImpl personRepoSingleton() {
+		return new PersonRepositoryImpl();
+	}
+		
 	@Override
 	public void add(Person element) {
 		persons.add(element);
@@ -52,6 +60,11 @@ public class PersonRepositoryImpl implements PersonRepository {
 	@Override
 	public List<Person> findAll() {
 		return persons;
+	}
+	
+	@Override
+	public void addAll(List<Person> persons) {
+		persons.addAll(persons);
 	}
 
 }

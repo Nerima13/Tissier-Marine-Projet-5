@@ -6,6 +6,7 @@ import com.openclassrooms.SafetyNetAlerts.dto.DataDTO;
 
 public interface IJsonReader {
 	
-	public DataDTO readJsonFile(String fileName) throws IOException;
+
+	DataDTO readJsonFile() throws IOException;
 
 }

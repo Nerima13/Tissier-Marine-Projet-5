@@ -9,14 +9,12 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.openclassrooms.SafetyNetAlerts.model.FireStation;
 import com.openclassrooms.SafetyNetAlerts.service.impl.FireStationServiceImpl;
 
 @RestController
-@RequestMapping("/firestation")
 public class FireStationController {
 	
 	private static Logger logger = LogManager.getLogger(FireStationController.class);
@@ -24,28 +22,28 @@ public class FireStationController {
 	@Autowired
 	private FireStationServiceImpl fireStationService;
 	
-	@PostMapping("")
+	@PostMapping("/firestation")
 	public void createFireStation(FireStation fireStation) {
 		logger.info("createFireStation called");
 		fireStationService.add(fireStation);
 		logger.info("Firestation successfully created" + fireStation.toString());
 	}
 		
-	@DeleteMapping("")
+	@DeleteMapping("/firestation")
 	public void deleteFireStation(FireStation fireStation) {
 		logger.info("deleteFireStation called");
 		fireStationService.delete(fireStation);
 		logger.info("Firestation successfully deleted" + fireStation.toString());
 	}
 		
-	@PutMapping("")
+	@PutMapping("/firestation")
 	public void updateFireStation(FireStation fireStation) {
 		logger.info("updateFireStation called");
 		fireStationService.update(fireStation);
 		logger.info("Firestation successfully updated" + fireStation.toString());
 	}
 		
-	@GetMapping("")
+	@GetMapping("/firestation")
 	public FireStation getFireStation(FireStation fireStation) {
 		logger.info("getFireStation called");
 		fireStationService.get(fireStation);
@@ -53,7 +51,7 @@ public class FireStationController {
 		return fireStation;
 	}
 		
-	@GetMapping("/all")
+	@GetMapping("/firestations")
 	public List<FireStation> getFireStationList() {
 	    logger.info("getFireStationList called");
 	    List<FireStation> fireStationList = fireStationService.findAll();

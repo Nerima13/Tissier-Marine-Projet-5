@@ -3,6 +3,7 @@ package com.openclassrooms.SafetyNetAlerts.service.impl;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import com.openclassrooms.SafetyNetAlerts.model.FireStation;
@@ -11,10 +12,11 @@ import com.openclassrooms.SafetyNetAlerts.service.FireStationService;
 
 @Service
 public class FireStationServiceImpl implements FireStationService {
-
+	
 	@Autowired
+	@Qualifier("fireStationRepoSingleton")
 	private FireStationRepository fireStationRepository;
-
+	
 	@Override
 	public void add(FireStation element) {
 		fireStationRepository.add(element);

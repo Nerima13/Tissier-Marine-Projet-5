@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Repository;
 
 import com.openclassrooms.SafetyNetAlerts.model.FireStation;
@@ -15,6 +17,12 @@ public class FireStationRepositoryImpl implements FireStationRepository {
 	
 	private static Logger logger = LogManager.getLogger(FireStationRepositoryImpl.class);
 	private List<FireStation> fireStations = new ArrayList<>();
+	
+	@Bean
+	@Scope("singleton")
+	public FireStationRepositoryImpl fireStationRepoSingleton() {
+		return new FireStationRepositoryImpl();
+	}
 	
 	@Override
 	public void add(FireStation element) {
@@ -48,6 +56,11 @@ public class FireStationRepositoryImpl implements FireStationRepository {
 	@Override
 	public List<FireStation> findAll() {
 		return fireStations;
+	}
+
+	@Override
+	public void addAll(List<FireStation> elements) {
+elements.addAll(fireStations)	;	
 	}
 
 }

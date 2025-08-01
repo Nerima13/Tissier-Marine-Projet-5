@@ -3,6 +3,7 @@ package com.openclassrooms.SafetyNetAlerts.service.impl;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import com.openclassrooms.SafetyNetAlerts.model.Person;
@@ -12,12 +13,10 @@ import com.openclassrooms.SafetyNetAlerts.service.PersonService;
 @Service
 public class PersonServiceImpl implements PersonService {
 
+	@Autowired
+	@Qualifier("personRepoSingleton")
     private PersonRepository personRepository;
     
-    @Autowired
-    public PersonServiceImpl(PersonRepository personRepository) {
-    	this.personRepository = personRepository;
-    }
 
     @Override
     public void add(Person element) {
