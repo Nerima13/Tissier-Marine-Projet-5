@@ -18,23 +18,23 @@ public class FireStationServiceImpl implements FireStationService {
 	private FireStationRepository fireStationRepository;
 	
 	@Override
-	public void add(FireStation element) {
-		fireStationRepository.add(element);
+	public void add(FireStation fireStation) {
+		fireStationRepository.add(fireStation);
 	}
 
 	@Override
-	public void delete(FireStation element) {
-		fireStationRepository.delete(element);
+	public void delete(FireStation fireStation) {
+		fireStationRepository.delete(fireStation);
 	}
 
 	@Override
-	public void update(FireStation element) {
-		fireStationRepository.update(element);
+	public void update(FireStation fireStation) {
+		fireStationRepository.update(fireStation);
 	}
 	
 	@Override
-    public FireStation get(FireStation element) {
-        return fireStationRepository.get(element); 
+    public FireStation get(FireStation fireStation) {
+        return fireStationRepository.get(fireStation);
     }
 
 	@Override

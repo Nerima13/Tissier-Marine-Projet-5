@@ -23,18 +23,18 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
 	}
 
 	@Override
-	public void delete(MedicalRecord element) {
-		medicalRecordRepository.delete(element);
+	public void delete(MedicalRecord medicalRecord) {
+		medicalRecordRepository.delete(medicalRecord);
 	}
 
 	@Override
-	public void update(MedicalRecord element) {
-		medicalRecordRepository.update(element);
+	public void update(MedicalRecord medicalRecord) {
+		medicalRecordRepository.update(medicalRecord);
 	}
 	
 	@Override
-    public MedicalRecord get(MedicalRecord element) {
-        return medicalRecordRepository.get(element); 
+    public MedicalRecord get(MedicalRecord medicalRecord) {
+        return medicalRecordRepository.get(medicalRecord);
     }
 
 	@Override

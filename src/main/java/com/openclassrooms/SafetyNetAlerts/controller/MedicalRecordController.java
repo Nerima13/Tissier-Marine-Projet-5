@@ -5,11 +5,8 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
 
 import com.openclassrooms.SafetyNetAlerts.model.MedicalRecord;
 import com.openclassrooms.SafetyNetAlerts.service.impl.MedicalRecordServiceImpl;
@@ -22,31 +19,34 @@ public class MedicalRecordController {
 	private MedicalRecordServiceImpl medicalRecordService;
 
 	@PostMapping("/medicalRecord")
-	public void createMedicalRecord(MedicalRecord medicalRecord) {
+	public void createMedicalRecord(@RequestBody MedicalRecord medicalRecord) {
 		logger.info("createMedicalRecord called");
 		medicalRecordService.add(medicalRecord);
 		logger.info("MedicalRecord successfully created" + medicalRecord.toString());
 	}
 	
 	@DeleteMapping("/medicalRecord")
-	public void deleteMedicalRecord(MedicalRecord medicalRecord) {
+	public void deleteMedicalRecord(@RequestBody MedicalRecord medicalRecord) {
 		logger.info("deleteMedicalRecord called");
 		medicalRecordService.delete(medicalRecord);
 		logger.info("MedicalRecord successfully deleted" + medicalRecord.toString());
 	}
 	
 	@PutMapping("/medicalRecord")
-	public void updateMedicalRecord(MedicalRecord medicalRecord) {
+	public void updateMedicalRecord(@RequestBody MedicalRecord medicalRecord) {
 		logger.info("updateMedicalRecord called");
 		medicalRecordService.update(medicalRecord);
 		logger.info("MedicalRecord successfully updated" + medicalRecord.toString());
 	}
 	
 	@GetMapping("/medicalRecord")
-	public MedicalRecord getMedicalRecord(MedicalRecord medicalRecord) {
+	@ResponseStatus(code = HttpStatus.OK)
+	public MedicalRecord getMedicalRecord(@RequestParam("firstName") String firstName,
+										  @RequestParam("lastName") String lastName) {
 		logger.info("getMedicalRecord called");
-		medicalRecordService.get(medicalRecord);
-		logger.info("MedicalRecord successfully gotten" + medicalRecord.toString());
+		MedicalRecord medicalRecord = new MedicalRecord(firstName, lastName);
+		medicalRecord = medicalRecordService.get(medicalRecord);
+		logger.info("MedicalRecord response : " + medicalRecord.toString());
 		return medicalRecord;
 	}
 	
@@ -54,7 +54,7 @@ public class MedicalRecordController {
     public List<MedicalRecord> getMedicalRecordList() {
         logger.info("getMedicalRecordList called");
         List<MedicalRecord> medicalRecordList = medicalRecordService.findAll();
-        logger.info("MedicalRecord list successfully gotten" + medicalRecordList.toString());
+        logger.info("MedicalRecord list response : " + medicalRecordList.toString());
         return medicalRecordList;
     }
 }

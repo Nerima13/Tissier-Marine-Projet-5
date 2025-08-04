@@ -25,30 +25,30 @@ public class MedicalRecordRepositoryImpl implements MedicalRecordRepository {
 	}
 	
 	@Override
-	public void add(MedicalRecord element) {
-		medicalRecords.add(element);
+	public void add(MedicalRecord medicalRecord) {
+		medicalRecords.add(medicalRecord);
 	}
 	
 	@Override
-	public void delete(MedicalRecord element) {
-		medicalRecords.remove(element);
+	public void delete(MedicalRecord medicalRecord) {
+		medicalRecords.remove(medicalRecord);
 	}
 	
 	@Override
-	public void update(MedicalRecord element) {
+	public void update(MedicalRecord medicalRecord) {
 		medicalRecords.forEach(m -> {
-	    	if (m.equals(element)) {
-	    		m.setBirthdate(element.getBirthdate());
-	            m.setMedications(element.getMedications());
-	            m.setAllergies(element.getAllergies());
+	    	if (m.equals(medicalRecord)) {
+	    		m.setBirthdate(medicalRecord.getBirthdate());
+	            m.setMedications(medicalRecord.getMedications());
+	            m.setAllergies(medicalRecord.getAllergies());
 	        }
 	    });
 	}
 	
 	@Override
-	public MedicalRecord get(MedicalRecord element) {
+	public MedicalRecord get(MedicalRecord medicalRecord) {
 		for (MedicalRecord m : medicalRecords) {
-			if (m.equals(element)) {
+			if (m.equals(medicalRecord)) {
 	            return m;
 	        }
 	    }
@@ -61,8 +61,8 @@ public class MedicalRecordRepositoryImpl implements MedicalRecordRepository {
 	}
 
 	@Override
-	public void addAll(List<MedicalRecord> elements) {
-elements.addAll(medicalRecords)	;	
+	public void addAll(List<MedicalRecord> element) {
+		medicalRecords.addAll(element);
 	}
 
 }

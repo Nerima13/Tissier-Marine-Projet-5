@@ -25,28 +25,28 @@ public class FireStationRepositoryImpl implements FireStationRepository {
 	}
 	
 	@Override
-	public void add(FireStation element) {
-		fireStations.add(element);
+	public void add(FireStation fireStation) {
+		fireStations.add(fireStation);
 	}
 	
 	@Override
-	public void delete(FireStation element) {
-		fireStations.remove(element);
+	public void delete(FireStation fireStation) {
+		fireStations.remove(fireStation);
 	}
 	
 	@Override
-	public void update(FireStation element) {
+	public void update(FireStation fireStation) {
 		fireStations.forEach(f -> {
-	    	if (f.equals(element)) {
-	            f.setStation(element.getStation());
+	    	if (f.equals(fireStation)) {
+	            f.setStation(fireStation.getStation());
 	        }
 	    });
 	}
 	
 	@Override
-	public FireStation get(FireStation element) {
+	public FireStation get(FireStation fireStation) {
 	    for (FireStation f : fireStations) {
-	    	if (f.equals(element)) {
+	    	if (f.equals(fireStation)) {
 	            return f;
 	        }
 	    }
@@ -59,8 +59,8 @@ public class FireStationRepositoryImpl implements FireStationRepository {
 	}
 
 	@Override
-	public void addAll(List<FireStation> elements) {
-elements.addAll(fireStations)	;	
+	public void addAll(List<FireStation> element) {
+		fireStations.addAll(element);
 	}
 
 }

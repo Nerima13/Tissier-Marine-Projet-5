@@ -16,26 +16,25 @@ public class PersonServiceImpl implements PersonService {
 	@Autowired
 	@Qualifier("personRepoSingleton")
     private PersonRepository personRepository;
-    
 
     @Override
-    public void add(Person element) {
-        personRepository.add(element);
+    public void add(Person person) {
+        personRepository.add(person);
     }
 
     @Override
-    public void delete(Person element) {
-        personRepository.delete(element);
+    public void delete(Person person) {
+        personRepository.delete(person);
     }
 
     @Override
-    public void update(Person element) {
-        personRepository.update(element);
+    public void update(Person person) {
+        personRepository.update(person);
     }
 
     @Override
-    public Person get(Person element) {
-        return personRepository.get(element); 
+    public Person get(Person person) {
+        return personRepository.get(person);
     }
 
     @Override

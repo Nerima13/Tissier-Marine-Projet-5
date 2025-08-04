@@ -26,5 +26,9 @@ public class MedicalRecord {
 	
 	@EqualsAndHashCode.Exclude
 	private List<String> allergies;
-	
+
+	public MedicalRecord(String firstName, String lastName) {
+		this.firstName = firstName;
+		this.lastName = lastName;
+	}
 }

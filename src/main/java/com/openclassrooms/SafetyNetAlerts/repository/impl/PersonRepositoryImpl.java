@@ -25,32 +25,32 @@ public class PersonRepositoryImpl implements PersonRepository {
 	}
 		
 	@Override
-	public void add(Person element) {
-		persons.add(element);
+	public void add(Person person) {
+		persons.add(person);
 	}
 	
 	@Override
-	public void delete(Person element) {
-		persons.remove(element);
+	public void delete(Person person) {
+		persons.remove(person);
 	}
 	
 	@Override
-	public void update(Person element) {
+	public void update(Person person) {
 	    persons.forEach(p -> {
-	    	if (p.equals(element)) {
-	    		p.setAddress(element.getAddress());
-	            p.setCity(element.getCity());
-	            p.setZip(element.getZip());
-	            p.setPhone(element.getPhone());
-	            p.setEmail(element.getEmail());
+	    	if (p.equals(person)) {
+	    		p.setAddress(person.getAddress());
+	            p.setCity(person.getCity());
+	            p.setZip(person.getZip());
+	            p.setPhone(person.getPhone());
+	            p.setEmail(person.getEmail());
 	        }
 	    });
 	}
 	
 	@Override
-	public Person get(Person element) {
+	public Person get(Person person) {
 		for (Person p : persons) {
-			if (p.equals(element)) {
+			if (p.equals(person)) {
 				return p;
 			}
 		}
@@ -63,8 +63,8 @@ public class PersonRepositoryImpl implements PersonRepository {
 	}
 	
 	@Override
-	public void addAll(List<Person> persons) {
-		persons.addAll(persons);
+	public void addAll(List<Person> element) {
+		persons.addAll(element);
 	}
 
 }

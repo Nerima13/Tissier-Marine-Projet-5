@@ -5,11 +5,8 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
 
 import com.openclassrooms.SafetyNetAlerts.model.FireStation;
 import com.openclassrooms.SafetyNetAlerts.service.impl.FireStationServiceImpl;
@@ -23,31 +20,33 @@ public class FireStationController {
 	private FireStationServiceImpl fireStationService;
 	
 	@PostMapping("/firestation")
-	public void createFireStation(FireStation fireStation) {
+	public void createFireStation(@RequestBody FireStation fireStation) {
 		logger.info("createFireStation called");
 		fireStationService.add(fireStation);
 		logger.info("Firestation successfully created" + fireStation.toString());
 	}
 		
 	@DeleteMapping("/firestation")
-	public void deleteFireStation(FireStation fireStation) {
+	public void deleteFireStation(@RequestBody FireStation fireStation) {
 		logger.info("deleteFireStation called");
 		fireStationService.delete(fireStation);
 		logger.info("Firestation successfully deleted" + fireStation.toString());
 	}
 		
 	@PutMapping("/firestation")
-	public void updateFireStation(FireStation fireStation) {
+	public void updateFireStation(@RequestBody FireStation fireStation) {
 		logger.info("updateFireStation called");
 		fireStationService.update(fireStation);
 		logger.info("Firestation successfully updated" + fireStation.toString());
 	}
 		
 	@GetMapping("/firestation")
-	public FireStation getFireStation(FireStation fireStation) {
+	@ResponseStatus(code = HttpStatus.OK)
+	public FireStation getFireStation(@RequestParam("address") String address) {
 		logger.info("getFireStation called");
-		fireStationService.get(fireStation);
-		logger.info("Firestation successfully gotten" + fireStation.toString());
+		FireStation fireStation = new FireStation(address);
+		fireStation = fireStationService.get(fireStation);
+		logger.info("Firestation response : " + fireStation.toString());
 		return fireStation;
 	}
 		
@@ -55,7 +54,7 @@ public class FireStationController {
 	public List<FireStation> getFireStationList() {
 	    logger.info("getFireStationList called");
 	    List<FireStation> fireStationList = fireStationService.findAll();
-	    logger.info("Firestation list successfully gotten" + fireStationList.toString());
+	    logger.info("Firestation list response : " + fireStationList.toString());
 	    return fireStationList;
 	}
 }

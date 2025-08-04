@@ -11,9 +11,9 @@ import lombok.NoArgsConstructor;
 
 @EqualsAndHashCode
 public class Person {
-	
+
 	private String firstName;
-	
+
 	private String lastName;
 	
 	@EqualsAndHashCode.Exclude
@@ -30,5 +30,9 @@ public class Person {
 	
 	@EqualsAndHashCode.Exclude
 	private String email;
-	
+
+	public Person(String firstName, String lastName) {
+		this.firstName = firstName;
+		this.lastName = lastName;
+	}
 }
