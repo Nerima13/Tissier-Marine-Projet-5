@@ -18,7 +18,7 @@ import java.io.IOException;
 @Service
 public class DataService implements CommandLineRunner {
 
-    private static Logger logger = LogManager.getLogger(DataService.class);
+    private static final Logger logger = LogManager.getLogger(DataService.class);
 
     @Autowired
     @Qualifier("personRepoSingleton")
