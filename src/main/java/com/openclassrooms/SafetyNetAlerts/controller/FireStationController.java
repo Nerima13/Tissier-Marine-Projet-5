@@ -20,6 +20,7 @@ public class FireStationController {
 	private FireStationServiceImpl fireStationService;
 	
 	@PostMapping("/firestation")
+	@ResponseStatus(code = HttpStatus.CREATED)
 	public void createFireStation(@RequestBody FireStation fireStation) {
 		logger.info("createFireStation called");
 		fireStationService.add(fireStation);
@@ -27,6 +28,7 @@ public class FireStationController {
 	}
 		
 	@DeleteMapping("/firestation")
+	@ResponseStatus(code = HttpStatus.OK)
 	public void deleteFireStation(@RequestBody FireStation fireStation) {
 		logger.info("deleteFireStation called");
 		fireStationService.delete(fireStation);
@@ -34,6 +36,7 @@ public class FireStationController {
 	}
 		
 	@PutMapping("/firestation")
+	@ResponseStatus(code = HttpStatus.OK)
 	public void updateFireStation(@RequestBody FireStation fireStation) {
 		logger.info("updateFireStation called");
 		fireStationService.update(fireStation);

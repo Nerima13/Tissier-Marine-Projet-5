@@ -19,6 +19,7 @@ public class MedicalRecordController {
 	private MedicalRecordServiceImpl medicalRecordService;
 
 	@PostMapping("/medicalRecord")
+	@ResponseStatus(code = HttpStatus.CREATED)
 	public void createMedicalRecord(@RequestBody MedicalRecord medicalRecord) {
 		logger.info("createMedicalRecord called");
 		medicalRecordService.add(medicalRecord);
@@ -26,6 +27,7 @@ public class MedicalRecordController {
 	}
 	
 	@DeleteMapping("/medicalRecord")
+	@ResponseStatus(code = HttpStatus.OK)
 	public void deleteMedicalRecord(@RequestBody MedicalRecord medicalRecord) {
 		logger.info("deleteMedicalRecord called");
 		medicalRecordService.delete(medicalRecord);
@@ -33,6 +35,7 @@ public class MedicalRecordController {
 	}
 	
 	@PutMapping("/medicalRecord")
+	@ResponseStatus(code = HttpStatus.OK)
 	public void updateMedicalRecord(@RequestBody MedicalRecord medicalRecord) {
 		logger.info("updateMedicalRecord called");
 		medicalRecordService.update(medicalRecord);

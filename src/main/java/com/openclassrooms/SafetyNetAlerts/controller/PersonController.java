@@ -24,6 +24,7 @@ public class PersonController {
 	
 	
 	@PostMapping("/person")
+	@ResponseStatus(code = HttpStatus.CREATED)
 	public void createPerson(@RequestBody Person person) {
 		logger.info("createPerson called");
 		personService.add(person);
@@ -31,6 +32,7 @@ public class PersonController {
 	}
 	
 	@DeleteMapping("/person")
+	@ResponseStatus(code = HttpStatus.OK)
 	public void deletePerson(@RequestBody Person person) {
 		logger.info("deletePerson called");
 		personService.delete(person);
@@ -38,6 +40,7 @@ public class PersonController {
 	}
 	
 	@PutMapping("/person")
+	@ResponseStatus(code = HttpStatus.OK)
 	public void updatePerson(@RequestBody Person person) {
 		logger.info("updatePerson called");
 		personService.update(person);
