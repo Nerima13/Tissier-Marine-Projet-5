@@ -4,6 +4,7 @@ package com.openclassrooms.SafetyNetAlerts.controller;
 
 import java.util.List;
 
+import com.openclassrooms.SafetyNetAlerts.dto.request.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,5 +65,42 @@ public class PersonController {
         List<Person> personList = personService.findAll();
         logger.info("getPersonList response : " + personList.toString());
         return personList;
+    }
+
+    @GetMapping("/firestation")
+    public FireStationCoverageDTO getPersonsCoveredByStation(@RequestParam("station") int station) {
+        logger.info("getPersonsCoveredByStation called");
+
+    }
+
+    @GetMapping("/childAlert")
+    public ChildDTO getChildInfos(@RequestParam("address") String address) {
+
+    }
+
+    @GetMapping("/phoneAlert")
+    public List<String> getPhoneByFireStation(@RequestParam("firestation") String fireStationNumber) {
+
+    }
+
+    @GetMapping("/fire")
+    public FireAlertDTO getFireAlert(@RequestParam("address") String address) {
+
+    }
+
+    @GetMapping("/flood/stations")
+    public FloodAlertDTO getFloodAlert(@RequestParam("stations") List<String> stations) {
+
+    }
+
+    @GetMapping("/personInfo")
+    public PersonInfoDTO getPersonInfo(@RequestParam("firstName") String firstName,
+                                       @RequestParam("lastName") String lastName) {
+
+    }
+
+    @GetMapping("/communityEmail")
+    public List<String> getEmail(@RequestParam("city") String city) {
+
     }
 }
