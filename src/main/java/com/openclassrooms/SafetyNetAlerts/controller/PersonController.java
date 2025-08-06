@@ -1,7 +1,5 @@
 package com.openclassrooms.SafetyNetAlerts.controller;
 
-
-
 import java.util.List;
 
 import com.openclassrooms.SafetyNetAlerts.dto.request.*;
@@ -13,8 +11,6 @@ import org.springframework.web.bind.annotation.*;
 
 import com.openclassrooms.SafetyNetAlerts.model.Person;
 import com.openclassrooms.SafetyNetAlerts.service.impl.PersonServiceImpl;
-
-
 
 @RestController
 public class PersonController {
@@ -67,8 +63,8 @@ public class PersonController {
         return personList;
     }
 
-    @GetMapping("/firestation")
-    public FireStationCoverageDTO getPersonsCoveredByStation(@RequestParam("station") int station) {
+    @GetMapping("/firestationNumber")
+    public FireStationCoverageDTO getPersonsCoveredByStation(@RequestParam("stationNumber") String station) {
         logger.info("getPersonsCoveredByStation called");
 		return personService.getPersonsCoveredByStation(station);
     }

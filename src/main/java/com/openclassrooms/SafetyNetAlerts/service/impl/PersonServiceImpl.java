@@ -3,7 +3,6 @@ package com.openclassrooms.SafetyNetAlerts.service.impl;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.List;
 
 import com.openclassrooms.SafetyNetAlerts.dto.request.*;
@@ -22,10 +21,9 @@ import com.openclassrooms.SafetyNetAlerts.service.PersonService;
 @Service
 public class PersonServiceImpl implements PersonService {
 
-    @Autowired
+@Autowired
     FireStationService fireStationService;
-
-    @Autowired
+@Autowired
     MedicalRecordService medicalRecordService;
 
 	@Autowired
@@ -57,7 +55,7 @@ public class PersonServiceImpl implements PersonService {
         return personRepository.findAll();
     }
 
-    public int getAge(Person person){
+    public int getAge(Person person) {
         MedicalRecord medicalRecord = new MedicalRecord(person.getFirstName(), person.getLastName());
         String birthdateAsString = medicalRecordService.get(medicalRecord).getBirthdate();
         LocalDate birthdate = LocalDate.parse(birthdateAsString, DateTimeFormatter.ofPattern("MM/dd/yyyy"));
@@ -65,8 +63,16 @@ public class PersonServiceImpl implements PersonService {
         return Period.between(birthdate, LocalDate.now()).getYears();
     }
 
+    public int getChildCount(Person person) {
+        int nbChild = 0;
+        int age = getAge(person);
+
+        if (age < 18) nbChild++;
+        return nbChild;
+    }
+
     @Override
-    public FireStationCoverageDTO getPersonsCoveredByStation(int station) {
+    public FireStationCoverageDTO getPersonsCoveredByStation(String station) {
         List<FireStation> fireStations = fireStationService.findAll();
         for(int i = 0; i< fireStations.size(); i++) {
             String fireStationAddress = fireStations.get(i).getAddress();
@@ -74,12 +80,14 @@ public class PersonServiceImpl implements PersonService {
             List<Person> persons = findAll();
             for (int y = 0; y < persons.size(); y++) {
                 String personAddress = persons.get(y).getAddress();
-                if (fireStationAddress.equals(personAddress)){
-                    FireStationCoverageDTO fireStationCoverageDTO = new FireStationCoverageDTO();
+                if (fireStationAddress.equals(personAddress)) {
 
+                    getChildCount(persons.get(y));
+                    System.err.println(getChildCount(persons.get(y)));
                 }
-
+                return null;
             }
+
         }
         return null;
         // TODO : renvoyer la liste des adresses des habitants couverts par leur station correspondante

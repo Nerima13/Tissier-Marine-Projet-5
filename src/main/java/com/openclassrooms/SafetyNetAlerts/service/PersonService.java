@@ -8,7 +8,7 @@ import java.util.List;
 public interface PersonService extends CrudService<Person> {
 
 
-    FireStationCoverageDTO getPersonsCoveredByStation(int station);
+    FireStationCoverageDTO getPersonsCoveredByStation(String station);
 
     ChildDTO getChildInfos(String address);
 
