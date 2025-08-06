@@ -70,37 +70,37 @@ public class PersonController {
     @GetMapping("/firestation")
     public FireStationCoverageDTO getPersonsCoveredByStation(@RequestParam("station") int station) {
         logger.info("getPersonsCoveredByStation called");
-
+		return personService.getPersonsCoveredByStation(station);
     }
 
     @GetMapping("/childAlert")
     public ChildDTO getChildInfos(@RequestParam("address") String address) {
-
+		return personService.getChildInfos(address);
     }
 
     @GetMapping("/phoneAlert")
     public List<String> getPhoneByFireStation(@RequestParam("firestation") String fireStationNumber) {
-
+		return personService.getPhoneByFireStation(fireStationNumber);
     }
 
     @GetMapping("/fire")
     public FireAlertDTO getFireAlert(@RequestParam("address") String address) {
-
+		return personService.getFireAlert(address);
     }
 
     @GetMapping("/flood/stations")
     public FloodAlertDTO getFloodAlert(@RequestParam("stations") List<String> stations) {
-
+		return personService.getFloodAlert(stations);
     }
 
     @GetMapping("/personInfo")
     public PersonInfoDTO getPersonInfo(@RequestParam("firstName") String firstName,
                                        @RequestParam("lastName") String lastName) {
-
+		return personService.getPersonInfo(firstName, lastName);
     }
 
     @GetMapping("/communityEmail")
     public List<String> getEmail(@RequestParam("city") String city) {
-
+		return personService.getEmail(city);
     }
 }
