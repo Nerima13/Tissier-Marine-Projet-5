@@ -3,6 +3,7 @@ package com.openclassrooms.SafetyNetAlerts.service.impl;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.openclassrooms.SafetyNetAlerts.dto.request.*;
@@ -127,6 +128,14 @@ public class PersonServiceImpl implements PersonService {
 
     @Override
     public List<String> getEmail(String city) {
-        return List.of();
+        List<String> emails = new ArrayList<>();
+        List<Person> persons = personRepository.findAll();
+
+        for (Person person : persons) {
+            if (person.getCity().equals(city)) {
+                emails.add(person.getEmail());
+            }
+        }
+        return emails;
     }
 }
