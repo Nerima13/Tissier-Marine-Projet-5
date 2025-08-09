@@ -75,6 +75,7 @@ public class PersonServiceImpl implements PersonService {
     @Override
     public FireStationCoverageDTO getPersonsCoveredByStation(String station) {
         List<FireStation> fireStations = fireStationService.findAll();
+
         for(int i = 0; i< fireStations.size(); i++) {
             String fireStationAddress = fireStations.get(i).getAddress();
 
@@ -122,8 +123,42 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
-    public PersonInfoDTO getPersonInfo(String firstName, String lastName) {
-        return null;
+    public List<PersonInfoDTO> getPersonInfo(String lastName) {
+        List<PersonInfoDTO> personInfoList = new ArrayList<>();
+        List<Person> persons = personRepository.findAll();
+        List<MedicalRecord> medicalRecords = medicalRecordService.findAll();
+
+        for (Person person : persons) {
+            if (person.getLastName().equals(lastName)) {
+
+                MedicalRecord personMedicalRecord = null;
+                for (MedicalRecord medicalRecord : medicalRecords) {
+                    boolean sameFirstName = medicalRecord.getFirstName().equals(person.getFirstName());
+                    boolean sameLastName = medicalRecord.getLastName().equals(person.getLastName());
+
+                    if (sameFirstName && sameLastName) {
+                        personMedicalRecord = medicalRecord;
+                        break;
+                    }
+                }
+
+                PersonInfoDTO dto = new PersonInfoDTO();
+                dto.setFirstName(person.getFirstName());
+                dto.setLastName(person.getLastName());
+                dto.setAddress(person.getAddress());
+                dto.setAge(getAge(person));
+
+                if (personMedicalRecord != null) {
+                    dto.setMedications(personMedicalRecord.getMedications());
+                    dto.setAllergies(personMedicalRecord.getAllergies());
+                } else {
+                    dto.setMedications(new ArrayList<>());
+                    dto.setAllergies(new ArrayList<>());
+                }
+                personInfoList.add(dto);
+            }
+        }
+        return personInfoList;
     }
 
     @Override

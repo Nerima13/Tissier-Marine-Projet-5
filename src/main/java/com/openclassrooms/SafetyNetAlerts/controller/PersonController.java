@@ -89,10 +89,9 @@ public class PersonController {
 		return personService.getFloodAlert(stations);
     }
 
-    @GetMapping("/personInfo")
-    public PersonInfoDTO getPersonInfo(@RequestParam("firstName") String firstName,
-                                       @RequestParam("lastName") String lastName) {
-		return personService.getPersonInfo(firstName, lastName);
+    @GetMapping("/personInfolastName")
+    public List<PersonInfoDTO> getPersonInfo(@RequestParam("lastName") String lastName) {
+		return personService.getPersonInfo(lastName);
     }
 
     @GetMapping("/communityEmail")
