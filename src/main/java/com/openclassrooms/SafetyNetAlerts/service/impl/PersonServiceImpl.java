@@ -92,14 +92,6 @@ public class PersonServiceImpl implements PersonService {
 
         }
         return null;
-        // TODO : renvoyer la liste des adresses des habitants couverts par leur station correspondante
-        // TODO : match adresses personnes et adresse firestations
-
-        /**
-         *
-         */
-        // TODO : utiliser le PersonByStationNumberDTO qui renseigne le nom/adresse/phone des habitants
-        // TODO : décompte des adultes et des enfants
     }
 
     @Override
@@ -109,7 +101,60 @@ public class PersonServiceImpl implements PersonService {
 
     @Override
     public List<String> getPhoneByFireStation(String fireStationNumber) {
-        return List.of();
+        List<String> result = new ArrayList<>();
+
+        if (fireStationNumber == null) {
+            return result;
+        }
+
+        // 1) Récupérer les adresses couvertes par la station demandée
+        List<String> addresses = new ArrayList<>();
+        List<FireStation> fireStations = fireStationService.findAll();
+
+        for (int f = 0; f < fireStations.size(); f++) {
+            FireStation fs = fireStations.get(f);
+            if (fs != null && fs.getStation() != null && fs.getAddress() != null) {
+                if (fs.getStation().equals(fireStationNumber)) {
+                    addresses.add(fs.getAddress());
+                }
+            }
+        }
+
+        // Si aucune adresse couverte, on renvoie []
+        if (addresses.isEmpty()) {
+            return result;
+        }
+
+        // 2) Lister les personnes vivant à ces adresses
+        List<Person> coveredPersons = new ArrayList<>();
+        List<Person> persons = personRepository.findAll();
+
+        for (int p = 0; p < persons.size(); p++) {
+            Person person = persons.get(p);
+            if (person != null && person.getAddress() != null && person.getPhone() != null) {
+
+
+                boolean isCovered = false;
+                for (int a = 0; a < addresses.size(); a++) {
+                    if (person.getAddress().equals(addresses.get(a))) {
+                        isCovered = true;
+                        break;
+                    }
+                }
+                if (isCovered) {
+                    coveredPersons.add(person);
+                }
+            }
+        }
+
+        // 3) Extraire les numéros de téléphone
+        for (int i = 0; i < coveredPersons.size(); i++) {
+            String phone = coveredPersons.get(i).getPhone();
+            if (phone != null) {
+                result.add(phone);
+            }
+        }
+        return result;
     }
 
     @Override
@@ -119,7 +164,13 @@ public class PersonServiceImpl implements PersonService {
 
     @Override
     public FloodAlertDTO getFloodAlert(List<String> stations) {
-        return null;
+        FloodAlertDTO result = new FloodAlertDTO();
+
+        List<FireStation> fireStations = fireStationService.findAll();
+        List<Person> persons = personRepository.findAll();
+        List<MedicalRecord> medicalRecords = medicalRecordService.findAll();
+
+        return result;
     }
 
     @Override

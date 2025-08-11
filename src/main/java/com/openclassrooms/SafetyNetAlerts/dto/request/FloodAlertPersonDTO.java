@@ -4,20 +4,24 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 
-public class PersonDTO {
+public class FloodAlertPersonDTO {
 
     private String firstName;
 
     private String lastName;
 
-    private String address;
-
-    private String phoneNumber;
+    private String phone;
 
     private int age;
 
+    private List<String> medications = new ArrayList<>();
+
+    private List<String> allergies = new ArrayList<>();
 }

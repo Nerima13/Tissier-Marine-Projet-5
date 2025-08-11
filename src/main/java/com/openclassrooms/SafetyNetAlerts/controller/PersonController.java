@@ -76,6 +76,7 @@ public class PersonController {
 
     @GetMapping("/phoneAlert")
     public List<String> getPhoneByFireStation(@RequestParam("firestation") String fireStationNumber) {
+		logger.info("getPhoneByFireStation called");
 		return personService.getPhoneByFireStation(fireStationNumber);
     }
 

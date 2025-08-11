@@ -13,7 +13,7 @@ import java.util.List;
 
 public class FireStationCoverageDTO {
 
-    private int station;
+    private String station;
 
     private List<PersonByStationNumberDTO> infoPerson = new ArrayList<>();
 

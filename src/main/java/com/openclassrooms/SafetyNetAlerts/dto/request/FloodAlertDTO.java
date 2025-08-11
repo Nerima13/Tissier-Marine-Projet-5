@@ -13,16 +13,8 @@ import java.util.List;
 
 public class FloodAlertDTO {
 
-    private String firstName;
+    private String station;
 
-    private String lastName;
-
-    private int age;
-
-    private String phone;
-
-    private List<String> medications = new ArrayList<>();
-
-    private List<String> allergies = new ArrayList<>();
+    private List<FloodAlertAddressDTO> addressList = new ArrayList<>();
 
 }

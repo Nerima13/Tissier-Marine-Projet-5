@@ -15,7 +15,7 @@ public class FireStation {
 	private String address;
 	
 	@EqualsAndHashCode.Exclude
-	private int station;
+	private String station;
 
 	public FireStation(String address) {
 		this.address = address;
