@@ -70,7 +70,8 @@ public class PersonController {
     }
 
     @GetMapping("/childAlert")
-    public ChildDTO getChildInfos(@RequestParam("address") String address) {
+    public List<ChildDTO> getChildInfos(@RequestParam("address") String address) {
+		logger.info("getChildInfos called");
 		return personService.getChildInfos(address);
     }
 

@@ -1,9 +1,12 @@
 package com.openclassrooms.SafetyNetAlerts.model;
 
+import com.openclassrooms.SafetyNetAlerts.dto.request.FamilyMemberDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -35,4 +38,7 @@ public class Person {
 		this.firstName = firstName;
 		this.lastName = lastName;
 	}
+
+    public void setFamily(List<FamilyMemberDTO> family) {
+    }
 }

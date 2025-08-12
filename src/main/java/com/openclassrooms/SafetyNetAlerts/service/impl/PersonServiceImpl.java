@@ -97,7 +97,7 @@ public class PersonServiceImpl implements PersonService {
             }
             if (!isCovered) continue;
 
-            // 3) Construire le dto
+            // 3) Construire le DTO
             PersonByStationNumberDTO dto = new PersonByStationNumberDTO();
             dto.setFirstName(p.getFirstName());
             dto.setLastName(p.getLastName());
@@ -140,8 +140,62 @@ public class PersonServiceImpl implements PersonService {
 
 
     @Override
-    public ChildDTO getChildInfos(String address) {
-        return null;
+    public List<ChildDTO> getChildInfos(String address) {
+        List<ChildDTO> result = new ArrayList<>();
+
+        // 1) Lister les personnes vivant à cette adresse
+        List<Person> personsAtAddress = new ArrayList<>();
+        List<Person> persons = personRepository.findAll();
+
+        for (int i = 0; i < persons.size(); i++) {
+            Person p = persons.get(i);
+            if (p != null && p.getAddress() != null && p.getAddress().equals(address)) {
+                personsAtAddress.add(p);
+            }
+        }
+        if (personsAtAddress.isEmpty()) {
+            return result;
+        }
+
+        // 2) Pour chaque personne à l'adresse, si c'est un enfant (≤ 18), construire le DTO
+        for (int i = 0; i < personsAtAddress.size(); i++) {
+            Person child = personsAtAddress.get(i);
+
+            int age = getAge(child);
+
+            if (age <= 18) {
+                ChildDTO dto = new ChildDTO();
+                dto.setFirstName(child.getFirstName());
+                dto.setLastName(child.getLastName());
+                dto.setAge(age);
+
+                // 3) Liste des autres membres du foyer
+                List<FamilyMemberDTO> family = new ArrayList<>();
+
+                for (int f = 0; f < personsAtAddress.size(); f++) {
+                    Person familyMember = personsAtAddress.get(f);
+                    if (familyMember != null) {
+                        boolean sameFirst = familyMember.getFirstName() != null
+                                && familyMember.getFirstName().equals(child.getFirstName());
+                        boolean sameLast  = familyMember.getLastName()  != null
+                                && familyMember.getLastName().equals(child.getLastName());
+
+                        // Exclure l'enfant lui-même
+                        if (!(sameFirst && sameLast)) {
+                            FamilyMemberDTO member = new FamilyMemberDTO();
+                            member.setFirstName(familyMember.getFirstName());
+                            member.setLastName(familyMember.getLastName());
+
+                            family.add(member);
+                        }
+                    }
+                }
+                dto.setFamily(family);
+
+                result.add(dto);
+            }
+        }
+        return result;
     }
 
     @Override

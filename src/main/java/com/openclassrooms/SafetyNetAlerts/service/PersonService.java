@@ -10,7 +10,7 @@ public interface PersonService extends CrudService<Person> {
 
     FireStationCoverageDTO getPersonsCoveredByStation(String station);
 
-    ChildDTO getChildInfos(String address);
+    List<ChildDTO> getChildInfos(String address);
 
     List<String> getPhoneByFireStation(String fireStationNumber);
 
