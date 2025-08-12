@@ -64,35 +64,80 @@ public class PersonServiceImpl implements PersonService {
         return Period.between(birthdate, LocalDate.now()).getYears();
     }
 
-    public int getChildCount(Person person) {
-        int nbChild = 0;
-        int age = getAge(person);
-
-        if (age < 18) nbChild++;
-        return nbChild;
-    }
-
     @Override
-    public FireStationCoverageDTO getPersonsCoveredByStation(String station) {
+    public FireStationCoverageDTO getPersonsCoveredByStation(String stationNumber) {
+        FireStationCoverageDTO result = new FireStationCoverageDTO();
+        result.setStation(stationNumber);
+
+        List<PersonByStationNumberDTO> coveredPersons = new ArrayList<>();
+        int nbAdult = 0;
+        int nbChild = 0;
+
+        // 1) Adresses de casernes couvertes par la station
+        List<String> coveredAddresses = new ArrayList<>();
         List<FireStation> fireStations = fireStationService.findAll();
-
-        for(int i = 0; i< fireStations.size(); i++) {
-            String fireStationAddress = fireStations.get(i).getAddress();
-
-            List<Person> persons = findAll();
-            for (int y = 0; y < persons.size(); y++) {
-                String personAddress = persons.get(y).getAddress();
-                if (fireStationAddress.equals(personAddress)) {
-
-                    getChildCount(persons.get(y));
-                    System.err.println(getChildCount(persons.get(y)));
-                }
-                return null;
+        for (FireStation f : fireStations) {
+            if (f != null && f.getStation() != null && f.getStation().equals(stationNumber)) {
+                coveredAddresses.add(f.getAddress());
             }
-
         }
-        return null;
+
+        // 2) Parcourir toutes les personnes
+        List<Person> persons = personRepository.findAll();
+        for (Person p : persons) {
+            if (p == null || p.getAddress() == null) continue;
+
+            // Vérifier que leurs adresses sont couvertes
+            boolean isCovered = false;
+            for (String addr : coveredAddresses) {
+                if (addr != null && addr.equals(p.getAddress())) {
+                    isCovered = true;
+                    break;
+                }
+            }
+            if (!isCovered) continue;
+
+            // 3) Construire le dto
+            PersonByStationNumberDTO dto = new PersonByStationNumberDTO();
+            dto.setFirstName(p.getFirstName());
+            dto.setLastName(p.getLastName());
+            dto.setAddress(p.getAddress());
+            dto.setPhone(p.getPhone());
+
+            // Éviter les doublons de personnes
+            boolean alreadyInList = false;
+            for (PersonByStationNumberDTO person : coveredPersons) {
+                boolean sameFirstName = p.getFirstName() != null
+                        && p.getFirstName().equals(person.getFirstName());
+                boolean sameLastName  = p.getLastName() != null
+                        && p.getLastName().equals(person.getLastName());
+                boolean sameAddress   = p.getAddress() != null
+                        && p.getAddress().equals(person.getAddress());
+
+                if (sameFirstName && sameLastName && sameAddress) {
+                    alreadyInList = true;
+                    break;
+                }
+            }
+            if (!alreadyInList) {
+                coveredPersons.add(dto);
+
+                // 4) Compter enfants (≤18) et adultes
+                int age = getAge(p);
+                if (age <= 18) {
+                    nbChild++;
+                } else {
+                    nbAdult++;
+                }
+            }
+        }
+
+        result.setInfoPerson(coveredPersons);
+        result.setNbAdult(nbAdult);
+        result.setNbChild(nbChild);
+        return result;
     }
+
 
     @Override
     public ChildDTO getChildInfos(String address) {
