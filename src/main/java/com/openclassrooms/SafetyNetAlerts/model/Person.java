@@ -39,6 +39,7 @@ public class Person {
 		this.lastName = lastName;
 	}
 
-    public void setFamily(List<FamilyMemberDTO> family) {
-    }
+	public void setFamily(List<FamilyMemberDTO> family) {
+
+	}
 }

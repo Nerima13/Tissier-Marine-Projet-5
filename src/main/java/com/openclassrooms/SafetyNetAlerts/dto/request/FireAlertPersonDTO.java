@@ -11,7 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 
-public class FireAlertDTO {
+public class FireAlertPersonDTO {
 
     private String firstName;
 

@@ -14,7 +14,7 @@ public interface PersonService extends CrudService<Person> {
 
     List<String> getPhoneByFireStation(String fireStationNumber);
 
-    FireAlertDTO getFireAlert(String address);
+    FireAlertAddressDTO getFireAlert(String address);
 
     FloodAlertDTO getFloodAlert(List<String> stations);
 

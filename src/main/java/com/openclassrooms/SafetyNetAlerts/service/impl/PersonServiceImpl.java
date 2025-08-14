@@ -202,10 +202,6 @@ public class PersonServiceImpl implements PersonService {
     public List<String> getPhoneByFireStation(String fireStationNumber) {
         List<String> result = new ArrayList<>();
 
-        if (fireStationNumber == null) {
-            return result;
-        }
-
         // 1) Récupérer les adresses couvertes par la station demandée
         List<String> addresses = new ArrayList<>();
         List<FireStation> fireStations = fireStationService.findAll();
@@ -257,8 +253,62 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
-    public FireAlertDTO getFireAlert(String address) {
-        return null;
+    public FireAlertAddressDTO getFireAlert(String address) {
+        FireAlertAddressDTO result = new FireAlertAddressDTO();
+
+        if (address == null) {
+            return result;
+        }
+
+        // 1) Trouver le numéro de caserne qui dessert l'adresse
+        String stationNumber = null;
+        List<FireStation> fireStations = fireStationService.findAll();
+
+        for (int f = 0; f < fireStations.size(); f++) {
+            FireStation fs = fireStations.get(f);
+            if (fs != null && fs.getAddress() != null && fs.getAddress().equals(address)) {
+                stationNumber = fs.getStation();
+                break;
+            }
+        }
+        result.setStation(stationNumber);
+
+        // 2) Lister les personnes vivant à cette adresse
+        List<Person> persons = personRepository.findAll();
+        List<FireAlertPersonDTO> residents = new ArrayList<FireAlertPersonDTO>();
+
+        for (int i = 0; i < persons.size(); i++) {
+            Person p = persons.get(i);
+            if (p != null && p.getAddress() != null && p.getAddress().equals(address)) {
+
+                // 3) Construire le DTO pour chaque personne
+                FireAlertPersonDTO dto = new FireAlertPersonDTO();
+                dto.setFirstName(p.getFirstName());
+                dto.setLastName(p.getLastName());
+                dto.setPhone(p.getPhone());
+                dto.setAge(getAge(p));
+
+                MedicalRecord mr = medicalRecordService.get(new MedicalRecord(p.getFirstName(), p.getLastName()));
+                if (mr != null) {
+                    if (mr.getMedications() != null) {
+                        dto.setMedications(new ArrayList<>(mr.getMedications()));
+                    } else {
+                        dto.setMedications(new ArrayList<>());
+                    }
+                    if (mr.getAllergies() != null) {
+                        dto.setAllergies(new ArrayList<>(mr.getAllergies()));
+                    } else {
+                        dto.setAllergies(new ArrayList<>());
+                    }
+                } else {
+                    dto.setMedications(new ArrayList<>());
+                    dto.setAllergies(new ArrayList<>());
+                }
+                residents.add(dto);
+            }
+        }
+        result.setResidents(residents);
+        return result;
     }
 
     @Override
@@ -275,12 +325,16 @@ public class PersonServiceImpl implements PersonService {
     @Override
     public List<PersonInfoDTO> getPersonInfo(String lastName) {
         List<PersonInfoDTO> personInfoList = new ArrayList<>();
+
+        // 1) Lister toutes les personnes et leurs dossiers médicaux
         List<Person> persons = personRepository.findAll();
         List<MedicalRecord> medicalRecords = medicalRecordService.findAll();
 
+        // Relever celles qui ont le même lastName
         for (Person person : persons) {
             if (person.getLastName().equals(lastName)) {
 
+                // 2) Chercher le dossier médical correspondant
                 MedicalRecord personMedicalRecord = null;
                 for (MedicalRecord medicalRecord : medicalRecords) {
                     boolean sameFirstName = medicalRecord.getFirstName().equals(person.getFirstName());
@@ -292,6 +346,7 @@ public class PersonServiceImpl implements PersonService {
                     }
                 }
 
+                // 3) Construire le DTO avec les infos de la personne
                 PersonInfoDTO dto = new PersonInfoDTO();
                 dto.setFirstName(person.getFirstName());
                 dto.setLastName(person.getLastName());

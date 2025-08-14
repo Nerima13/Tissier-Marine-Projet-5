@@ -82,7 +82,8 @@ public class PersonController {
     }
 
     @GetMapping("/fire")
-    public FireAlertDTO getFireAlert(@RequestParam("address") String address) {
+    public FireAlertAddressDTO getFireAlert(@RequestParam("address") String address) {
+		logger.info("getFireAlert called");
 		return personService.getFireAlert(address);
     }
 
