@@ -67,7 +67,10 @@ public class PersonServiceImpl implements PersonService {
     @Override
     public FireStationCoverageDTO getPersonsCoveredByStation(String stationNumber) {
         FireStationCoverageDTO result = new FireStationCoverageDTO();
-        result.setStation(stationNumber);
+
+        if (stationNumber == null) {
+            return result;
+        }
 
         List<PersonByStationNumberDTO> coveredPersons = new ArrayList<>();
         int nbAdult = 0;
@@ -143,6 +146,10 @@ public class PersonServiceImpl implements PersonService {
     public List<ChildDTO> getChildInfos(String address) {
         List<ChildDTO> result = new ArrayList<>();
 
+        if (address == null) {
+            return result;
+        }
+
         // 1) Lister les personnes vivant à cette adresse
         List<Person> personsAtAddress = new ArrayList<>();
         List<Person> persons = personRepository.findAll();
@@ -202,6 +209,10 @@ public class PersonServiceImpl implements PersonService {
     public List<String> getPhoneByFireStation(String fireStationNumber) {
         List<String> result = new ArrayList<>();
 
+        if (fireStationNumber == null) {
+            return result;
+        }
+
         // 1) Récupérer les adresses couvertes par la station demandée
         List<String> addresses = new ArrayList<>();
         List<FireStation> fireStations = fireStationService.findAll();
@@ -227,7 +238,6 @@ public class PersonServiceImpl implements PersonService {
         for (int p = 0; p < persons.size(); p++) {
             Person person = persons.get(p);
             if (person != null && person.getAddress() != null && person.getPhone() != null) {
-
 
                 boolean isCovered = false;
                 for (int a = 0; a < addresses.size(); a++) {
@@ -315,16 +325,80 @@ public class PersonServiceImpl implements PersonService {
     public FloodAlertDTO getFloodAlert(List<String> stations) {
         FloodAlertDTO result = new FloodAlertDTO();
 
+        if (stations == null) {
+            return result;
+        }
+
         List<FireStation> fireStations = fireStationService.findAll();
         List<Person> persons = personRepository.findAll();
-        List<MedicalRecord> medicalRecords = medicalRecordService.findAll();
 
+        // 1) Récupérer les adresses couvertes par chaque station
+        List<String> coveredAddresses = new ArrayList<>();
+
+        for (int s = 0; s < stations.size(); s++) {
+            String stationNumber = stations.get(s);
+
+            for (int f = 0; f < fireStations.size(); f++) {
+                FireStation fs = fireStations.get(f);
+                if (fs != null && fs.getStation() != null && fs.getAddress() != null
+                        && fs.getStation().equals(stationNumber)) {
+                    boolean exists = false;
+                    for (int a = 0; a < coveredAddresses.size(); a++) {
+                        if (coveredAddresses.get(a).equals(fs.getAddress())) {
+                            exists = true;
+                            break;
+                        }
+                    }
+                    if (!exists) {
+                        coveredAddresses.add(fs.getAddress());
+                    }
+                }
+            }
+        }
+
+        // 2) Pour chaque adresse couverte, ajouter les habitants + infos demandées
+        for (int a = 0; a < coveredAddresses.size(); a++) {
+            String address = coveredAddresses.get(a);
+
+            FloodAlertAddressDTO addressDTO = new FloodAlertAddressDTO();
+            addressDTO.setAddress(address);
+
+            for (int p = 0; p < persons.size(); p++) {
+                Person person = persons.get(p);
+                if (person != null && address.equals(person.getAddress())) {
+
+                    // 3) Construire le DTO de chaque personne
+                    FloodAlertPersonDTO personDTO = new FloodAlertPersonDTO();
+                    personDTO.setFirstName(person.getFirstName());
+                    personDTO.setLastName(person.getLastName());
+                    personDTO.setPhone(person.getPhone());
+                    personDTO.setAge(getAge(person));
+
+                    MedicalRecord mr = medicalRecordService.get(new MedicalRecord(person.getFirstName(), person.getLastName()));
+                    if (mr != null) {
+                        personDTO.setMedications(new ArrayList<>(mr.getMedications()));
+                        personDTO.setAllergies(new ArrayList<>(mr.getAllergies()));
+                    } else {
+                        personDTO.setMedications(new ArrayList<>());
+                        personDTO.setAllergies(new ArrayList<>());
+                    }
+
+                    addressDTO.getListPerson().add(personDTO);
+                    }
+                }
+            result.setStations(stations);
+            result.getAddressList().add(addressDTO);
+        }
         return result;
     }
 
     @Override
     public List<PersonInfoDTO> getPersonInfo(String lastName) {
-        List<PersonInfoDTO> personInfoList = new ArrayList<>();
+        List<PersonInfoDTO> result = new ArrayList<>();
+
+        if (lastName == null) {
+            return result;
+        }
 
         // 1) Lister toutes les personnes et leurs dossiers médicaux
         List<Person> persons = personRepository.findAll();
@@ -360,22 +434,29 @@ public class PersonServiceImpl implements PersonService {
                     dto.setMedications(new ArrayList<>());
                     dto.setAllergies(new ArrayList<>());
                 }
-                personInfoList.add(dto);
+                result.add(dto);
             }
         }
-        return personInfoList;
+        return result;
     }
 
     @Override
     public List<String> getEmail(String city) {
-        List<String> emails = new ArrayList<>();
+        List<String> result = new ArrayList<>();
+
+        if (city == null) {
+            return result;
+        }
+
+        // 1) Lister toutes les personnes
         List<Person> persons = personRepository.findAll();
 
+        // 2) Obtenir l'email des habitants
         for (Person person : persons) {
             if (person.getCity().equals(city)) {
-                emails.add(person.getEmail());
+                result.add(person.getEmail());
             }
         }
-        return emails;
+        return result;
     }
 }

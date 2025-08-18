@@ -13,7 +13,7 @@ import java.util.List;
 
 public class FloodAlertDTO {
 
-    private String station;
+    private List<String> stations;
 
     private List<FloodAlertAddressDTO> addressList = new ArrayList<>();
 

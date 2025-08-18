@@ -89,16 +89,19 @@ public class PersonController {
 
     @GetMapping("/flood/stations")
     public FloodAlertDTO getFloodAlert(@RequestParam("stations") List<String> stations) {
+		logger.info("getFloodAlert called");
 		return personService.getFloodAlert(stations);
     }
 
     @GetMapping("/personInfolastName")
     public List<PersonInfoDTO> getPersonInfo(@RequestParam("lastName") String lastName) {
+		logger.info("getPersonInfo called");
 		return personService.getPersonInfo(lastName);
     }
 
     @GetMapping("/communityEmail")
     public List<String> getEmail(@RequestParam("city") String city) {
+		logger.info("getEmail called");
 		return personService.getEmail(city);
     }
 }
