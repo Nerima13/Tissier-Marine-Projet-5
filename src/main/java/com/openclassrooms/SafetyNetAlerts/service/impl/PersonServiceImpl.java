@@ -135,6 +135,7 @@ public class PersonServiceImpl implements PersonService {
             }
         }
 
+        result.setStation(stationNumber);
         result.setInfoPerson(coveredPersons);
         result.setNbAdult(nbAdult);
         result.setNbChild(nbChild);
@@ -426,6 +427,7 @@ public class PersonServiceImpl implements PersonService {
                 dto.setLastName(person.getLastName());
                 dto.setAddress(person.getAddress());
                 dto.setAge(getAge(person));
+                dto.setEmail(person.getEmail());
 
                 if (personMedicalRecord != null) {
                     dto.setMedications(personMedicalRecord.getMedications());

@@ -21,6 +21,8 @@ public class PersonInfoDTO {
 
     private String address;
 
+    private String email;
+
     private List<String> medications = new ArrayList<>();
 
     private List<String> allergies = new ArrayList<>();
