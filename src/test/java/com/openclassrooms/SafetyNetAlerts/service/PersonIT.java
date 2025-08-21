@@ -1,4 +1,4 @@
-package com.openclassrooms.SafetyNetAlerts.controller;
+package com.openclassrooms.SafetyNetAlerts.service;
 
 
 import org.junit.jupiter.api.Test;
@@ -16,7 +16,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 
-public class PersonControllerTest {
+public class PersonIT {
 
     @Autowired
     public MockMvc mockMvc;
