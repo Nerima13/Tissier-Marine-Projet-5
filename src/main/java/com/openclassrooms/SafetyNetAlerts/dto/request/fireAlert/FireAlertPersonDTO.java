@@ -1,6 +1,5 @@
-package com.openclassrooms.SafetyNetAlerts.dto.request;
+package com.openclassrooms.SafetyNetAlerts.dto.request.fireAlert;
 
-import com.openclassrooms.SafetyNetAlerts.model.Person;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,7 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 
-public class ChildDTO {
+public class FireAlertPersonDTO {
 
     private String firstName;
 
@@ -20,5 +19,10 @@ public class ChildDTO {
 
     private int age;
 
-    private List<FamilyMemberDTO> family = new ArrayList<>();
+    private String phone;
+
+    private List<String> medications = new ArrayList<>();
+
+    private List<String> allergies = new ArrayList<>();
+
 }

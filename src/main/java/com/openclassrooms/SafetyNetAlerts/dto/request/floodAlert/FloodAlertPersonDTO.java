@@ -1,4 +1,4 @@
-package com.openclassrooms.SafetyNetAlerts.dto.request;
+package com.openclassrooms.SafetyNetAlerts.dto.request.floodAlert;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,17 +11,15 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 
-public class PersonInfoDTO {
+public class FloodAlertPersonDTO {
 
     private String firstName;
 
     private String lastName;
 
+    private String phone;
+
     private int age;
-
-    private String address;
-
-    private String email;
 
     private List<String> medications = new ArrayList<>();
 

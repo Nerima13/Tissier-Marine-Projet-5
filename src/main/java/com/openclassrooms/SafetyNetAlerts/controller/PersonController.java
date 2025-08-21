@@ -2,7 +2,11 @@ package com.openclassrooms.SafetyNetAlerts.controller;
 
 import java.util.List;
 
-import com.openclassrooms.SafetyNetAlerts.dto.request.*;
+import com.openclassrooms.SafetyNetAlerts.dto.request.childAlert.ChildDTO;
+import com.openclassrooms.SafetyNetAlerts.dto.request.fireAlert.FireAlertAddressDTO;
+import com.openclassrooms.SafetyNetAlerts.dto.request.firestationNumber.FireStationCoverageDTO;
+import com.openclassrooms.SafetyNetAlerts.dto.request.floodAlert.FloodAlertDTO;
+import com.openclassrooms.SafetyNetAlerts.dto.request.personInfo.PersonInfoDTO;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,18 +53,13 @@ public class PersonController {
 	public Person getPerson(@RequestParam("firstName") String firstName,
 							@RequestParam("lastName") String lastName) {
 		logger.info("getPerson called");
-		Person person = new Person(firstName, lastName);
-		person = personService.get(person);
-		logger.info("getPerson response : " + person.toString());
-		return person;
+		return personService.get(new Person(firstName, lastName));
 	}
 	
 	@GetMapping("/persons")
     public List<Person> getPersonList() {
         logger.info("getPersonList called");
-        List<Person> personList = personService.findAll();
-        logger.info("getPersonList response : " + personList.toString());
-        return personList;
+        return personService.findAll();
     }
 
     @GetMapping("/firestationNumber")

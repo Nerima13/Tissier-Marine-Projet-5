@@ -1,4 +1,4 @@
-package com.openclassrooms.SafetyNetAlerts.dto.request;
+package com.openclassrooms.SafetyNetAlerts.dto.request.personInfo;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,7 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 
-public class FireAlertPersonDTO {
+public class PersonInfoDTO {
 
     private String firstName;
 
@@ -19,10 +19,11 @@ public class FireAlertPersonDTO {
 
     private int age;
 
-    private String phone;
+    private String address;
+
+    private String email;
 
     private List<String> medications = new ArrayList<>();
 
     private List<String> allergies = new ArrayList<>();
-
 }

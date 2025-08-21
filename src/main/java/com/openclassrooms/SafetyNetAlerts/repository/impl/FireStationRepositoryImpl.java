@@ -63,4 +63,8 @@ public class FireStationRepositoryImpl implements FireStationRepository {
 		fireStations.addAll(element);
 	}
 
+    @Override
+    public void clear() {
+        fireStations.clear();
+    }
 }

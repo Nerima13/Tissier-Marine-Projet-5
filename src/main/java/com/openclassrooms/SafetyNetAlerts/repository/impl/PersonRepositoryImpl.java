@@ -67,4 +67,8 @@ public class PersonRepositoryImpl implements PersonRepository {
 		persons.addAll(element);
 	}
 
+    @Override
+    public void clear() {
+        persons.clear();
+    }
 }

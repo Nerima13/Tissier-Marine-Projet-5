@@ -1,23 +1,23 @@
-package com.openclassrooms.SafetyNetAlerts.dto.request;
+package com.openclassrooms.SafetyNetAlerts.dto.request.childAlert;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 
-public class PersonDTO {
+public class ChildDTO {
 
     private String firstName;
 
     private String lastName;
 
-    private String address;
-
-    private String phoneNumber;
-
     private int age;
 
+    private List<FamilyMemberDTO> family = new ArrayList<>();
 }

@@ -6,7 +6,16 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.openclassrooms.SafetyNetAlerts.dto.request.*;
+import com.openclassrooms.SafetyNetAlerts.dto.request.childAlert.ChildDTO;
+import com.openclassrooms.SafetyNetAlerts.dto.request.childAlert.FamilyMemberDTO;
+import com.openclassrooms.SafetyNetAlerts.dto.request.fireAlert.FireAlertAddressDTO;
+import com.openclassrooms.SafetyNetAlerts.dto.request.fireAlert.FireAlertPersonDTO;
+import com.openclassrooms.SafetyNetAlerts.dto.request.firestationNumber.FireStationCoverageDTO;
+import com.openclassrooms.SafetyNetAlerts.dto.request.firestationNumber.PersonByStationNumberDTO;
+import com.openclassrooms.SafetyNetAlerts.dto.request.floodAlert.FloodAlertAddressDTO;
+import com.openclassrooms.SafetyNetAlerts.dto.request.floodAlert.FloodAlertDTO;
+import com.openclassrooms.SafetyNetAlerts.dto.request.floodAlert.FloodAlertPersonDTO;
+import com.openclassrooms.SafetyNetAlerts.dto.request.personInfo.PersonInfoDTO;
 import com.openclassrooms.SafetyNetAlerts.model.FireStation;
 import com.openclassrooms.SafetyNetAlerts.model.MedicalRecord;
 import com.openclassrooms.SafetyNetAlerts.service.FireStationService;
@@ -76,7 +85,7 @@ public class PersonServiceImpl implements PersonService {
         int nbAdult = 0;
         int nbChild = 0;
 
-        // 1) Adresses de casernes couvertes par la station
+        // 1) Addresses of firestations covered by the station
         List<String> coveredAddresses = new ArrayList<>();
         List<FireStation> fireStations = fireStationService.findAll();
         for (FireStation f : fireStations) {
@@ -85,12 +94,12 @@ public class PersonServiceImpl implements PersonService {
             }
         }
 
-        // 2) Parcourir toutes les personnes
+        // 2) Browse all people
         List<Person> persons = personRepository.findAll();
         for (Person p : persons) {
             if (p == null || p.getAddress() == null) continue;
 
-            // Vérifier que leurs adresses sont couvertes
+            // Check that their addresses are covered
             boolean isCovered = false;
             for (String addr : coveredAddresses) {
                 if (addr != null && addr.equals(p.getAddress())) {
@@ -100,14 +109,14 @@ public class PersonServiceImpl implements PersonService {
             }
             if (!isCovered) continue;
 
-            // 3) Construire le DTO
+            // 3) Build the DTO
             PersonByStationNumberDTO dto = new PersonByStationNumberDTO();
             dto.setFirstName(p.getFirstName());
             dto.setLastName(p.getLastName());
             dto.setAddress(p.getAddress());
             dto.setPhone(p.getPhone());
 
-            // Éviter les doublons de personnes
+            // Avoid duplicate people
             boolean alreadyInList = false;
             for (PersonByStationNumberDTO person : coveredPersons) {
                 boolean sameFirstName = p.getFirstName() != null
@@ -125,7 +134,7 @@ public class PersonServiceImpl implements PersonService {
             if (!alreadyInList) {
                 coveredPersons.add(dto);
 
-                // 4) Compter enfants (≤18) et adultes
+                // 4) Count children (≤18) and adults
                 int age = getAge(p);
                 if (age <= 18) {
                     nbChild++;
@@ -151,7 +160,7 @@ public class PersonServiceImpl implements PersonService {
             return result;
         }
 
-        // 1) Lister les personnes vivant à cette adresse
+        // 1) List the people living at this address
         List<Person> personsAtAddress = new ArrayList<>();
         List<Person> persons = personRepository.findAll();
 
@@ -165,7 +174,7 @@ public class PersonServiceImpl implements PersonService {
             return result;
         }
 
-        // 2) Pour chaque personne à l'adresse, si c'est un enfant (≤ 18), construire le DTO
+        // 2) For each person at the address, if a child (≤ 18), construct the DTO
         for (int i = 0; i < personsAtAddress.size(); i++) {
             Person child = personsAtAddress.get(i);
 
@@ -177,7 +186,7 @@ public class PersonServiceImpl implements PersonService {
                 dto.setLastName(child.getLastName());
                 dto.setAge(age);
 
-                // 3) Liste des autres membres du foyer
+                // 3) List of other household members
                 List<FamilyMemberDTO> family = new ArrayList<>();
 
                 for (int f = 0; f < personsAtAddress.size(); f++) {
@@ -188,7 +197,7 @@ public class PersonServiceImpl implements PersonService {
                         boolean sameLast  = familyMember.getLastName()  != null
                                 && familyMember.getLastName().equals(child.getLastName());
 
-                        // Exclure l'enfant lui-même
+                        // Exclude the child himself
                         if (!(sameFirst && sameLast)) {
                             FamilyMemberDTO member = new FamilyMemberDTO();
                             member.setFirstName(familyMember.getFirstName());
@@ -214,7 +223,7 @@ public class PersonServiceImpl implements PersonService {
             return result;
         }
 
-        // 1) Récupérer les adresses couvertes par la station demandée
+        // 1) Retrieve the addresses covered by the requested station
         List<String> addresses = new ArrayList<>();
         List<FireStation> fireStations = fireStationService.findAll();
 
@@ -227,12 +236,12 @@ public class PersonServiceImpl implements PersonService {
             }
         }
 
-        // Si aucune adresse couverte, on renvoie []
+        // If no address is covered, we return []
         if (addresses.isEmpty()) {
             return result;
         }
 
-        // 2) Lister les personnes vivant à ces adresses
+        // 2) List the people living at these addresses
         List<Person> coveredPersons = new ArrayList<>();
         List<Person> persons = personRepository.findAll();
 
@@ -253,7 +262,7 @@ public class PersonServiceImpl implements PersonService {
             }
         }
 
-        // 3) Extraire les numéros de téléphone
+        // 3) Extract phone numbers
         for (int i = 0; i < coveredPersons.size(); i++) {
             String phone = coveredPersons.get(i).getPhone();
             if (phone != null) {
@@ -271,7 +280,7 @@ public class PersonServiceImpl implements PersonService {
             return result;
         }
 
-        // 1) Trouver le numéro de caserne qui dessert l'adresse
+        // 1) Find the station number that serves the address
         String stationNumber = null;
         List<FireStation> fireStations = fireStationService.findAll();
 
@@ -284,7 +293,7 @@ public class PersonServiceImpl implements PersonService {
         }
         result.setStation(stationNumber);
 
-        // 2) Lister les personnes vivant à cette adresse
+        // 2) List the people living at this address
         List<Person> persons = personRepository.findAll();
         List<FireAlertPersonDTO> residents = new ArrayList<FireAlertPersonDTO>();
 
@@ -292,7 +301,7 @@ public class PersonServiceImpl implements PersonService {
             Person p = persons.get(i);
             if (p != null && p.getAddress() != null && p.getAddress().equals(address)) {
 
-                // 3) Construire le DTO pour chaque personne
+                // 3) Build the DTO for each person
                 FireAlertPersonDTO dto = new FireAlertPersonDTO();
                 dto.setFirstName(p.getFirstName());
                 dto.setLastName(p.getLastName());
@@ -333,7 +342,7 @@ public class PersonServiceImpl implements PersonService {
         List<FireStation> fireStations = fireStationService.findAll();
         List<Person> persons = personRepository.findAll();
 
-        // 1) Récupérer les adresses couvertes par chaque station
+        // 1) Retrieve the addresses covered by each station
         List<String> coveredAddresses = new ArrayList<>();
 
         for (int s = 0; s < stations.size(); s++) {
@@ -357,7 +366,7 @@ public class PersonServiceImpl implements PersonService {
             }
         }
 
-        // 2) Pour chaque adresse couverte, ajouter les habitants + infos demandées
+        // 2) For each address covered, add the residents + requested information
         for (int a = 0; a < coveredAddresses.size(); a++) {
             String address = coveredAddresses.get(a);
 
@@ -368,7 +377,7 @@ public class PersonServiceImpl implements PersonService {
                 Person person = persons.get(p);
                 if (person != null && address.equals(person.getAddress())) {
 
-                    // 3) Construire le DTO de chaque personne
+                    // 3) Build each person's DTO
                     FloodAlertPersonDTO personDTO = new FloodAlertPersonDTO();
                     personDTO.setFirstName(person.getFirstName());
                     personDTO.setLastName(person.getLastName());
@@ -401,15 +410,15 @@ public class PersonServiceImpl implements PersonService {
             return result;
         }
 
-        // 1) Lister toutes les personnes et leurs dossiers médicaux
+        // 1) List all people and their medical records
         List<Person> persons = personRepository.findAll();
         List<MedicalRecord> medicalRecords = medicalRecordService.findAll();
 
-        // Relever celles qui ont le même lastName
+        // Pick out those with the same lastName
         for (Person person : persons) {
             if (person.getLastName().equals(lastName)) {
 
-                // 2) Chercher le dossier médical correspondant
+                // 2) Search for the corresponding medical record
                 MedicalRecord personMedicalRecord = null;
                 for (MedicalRecord medicalRecord : medicalRecords) {
                     boolean sameFirstName = medicalRecord.getFirstName().equals(person.getFirstName());
@@ -421,7 +430,7 @@ public class PersonServiceImpl implements PersonService {
                     }
                 }
 
-                // 3) Construire le DTO avec les infos de la personne
+                // 3) Build the DTO with the person's information
                 PersonInfoDTO dto = new PersonInfoDTO();
                 dto.setFirstName(person.getFirstName());
                 dto.setLastName(person.getLastName());
@@ -450,10 +459,10 @@ public class PersonServiceImpl implements PersonService {
             return result;
         }
 
-        // 1) Lister toutes les personnes
+        // 1) List all people
         List<Person> persons = personRepository.findAll();
 
-        // 2) Obtenir l'email des habitants
+        // 2) Get the email of the residents
         for (Person person : persons) {
             if (person.getCity().equals(city)) {
                 result.add(person.getEmail());

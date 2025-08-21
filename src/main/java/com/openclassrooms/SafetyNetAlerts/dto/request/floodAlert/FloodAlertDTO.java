@@ -1,4 +1,4 @@
-package com.openclassrooms.SafetyNetAlerts.dto.request;
+package com.openclassrooms.SafetyNetAlerts.dto.request.floodAlert;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

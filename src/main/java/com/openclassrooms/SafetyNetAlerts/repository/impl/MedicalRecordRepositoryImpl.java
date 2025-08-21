@@ -65,4 +65,8 @@ public class MedicalRecordRepositoryImpl implements MedicalRecordRepository {
 		medicalRecords.addAll(element);
 	}
 
+    @Override
+    public void clear() {
+        medicalRecords.clear();
+    }
 }

@@ -1,4 +1,4 @@
-package com.openclassrooms.SafetyNetAlerts.dto.request;
+package com.openclassrooms.SafetyNetAlerts.dto.request.childAlert;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,13 +8,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 
-public class PersonByStationNumberDTO {
+public class FamilyMemberDTO {
 
     private String firstName;
 
     private String lastName;
-
-    private String address;
-
-    private String phone;
 }

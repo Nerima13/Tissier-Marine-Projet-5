@@ -22,7 +22,21 @@ public class PersonControllerTest {
     public MockMvc mockMvc;
 
     @Test
-    public void getPersonsCoveredByStation() throws Exception {
+    public void getPersonTest() throws Exception {
+        mockMvc.perform(get("/person?firstName=John&lastName=Boyd"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.firstName", is("John")))
+                .andExpect(jsonPath("$.lastName", is("Boyd")))
+                .andExpect(jsonPath("$.address", is("1509 Culver St")))
+                .andExpect(jsonPath("$.city", is("Culver")))
+                .andExpect(jsonPath("$.zip", is(97451)))
+                .andExpect(jsonPath("$.phone", is("841-874-6512")))
+                .andExpect(jsonPath("$.city", is("Culver")))
+                .andExpect(jsonPath("$.email", is("jaboyd@email.com")));
+    }
+
+    @Test
+    public void getPersonsCoveredByStationTest() throws Exception {
         mockMvc.perform(get("/firestationNumber?stationNumber=3"))
                 .andExpect(status().isOk())
 
