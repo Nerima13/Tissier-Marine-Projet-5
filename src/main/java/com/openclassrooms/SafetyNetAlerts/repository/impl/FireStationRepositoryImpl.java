@@ -14,8 +14,7 @@ import com.openclassrooms.SafetyNetAlerts.repository.FireStationRepository;
 
 @Repository
 public class FireStationRepositoryImpl implements FireStationRepository {
-	
-	private static Logger logger = LogManager.getLogger(FireStationRepositoryImpl.class);
+
 	private List<FireStation> fireStations = new ArrayList<>();
 	
 	@Bean

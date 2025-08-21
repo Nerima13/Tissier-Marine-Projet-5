@@ -14,8 +14,7 @@ import com.openclassrooms.SafetyNetAlerts.repository.PersonRepository;
 
 @Repository
 public class PersonRepositoryImpl implements PersonRepository {
-	
-	private static Logger logger = LogManager.getLogger(PersonRepositoryImpl.class);
+
 	private final List<Person> persons = new ArrayList<>();
 	
 	@Bean

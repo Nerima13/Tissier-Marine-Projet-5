@@ -14,8 +14,7 @@ import com.openclassrooms.SafetyNetAlerts.repository.MedicalRecordRepository;
 
 @Repository
 public class MedicalRecordRepositoryImpl implements MedicalRecordRepository {
-	
-	private static Logger logger = LogManager.getLogger(MedicalRecordRepositoryImpl.class);
+
 	private List<MedicalRecord> medicalRecords = new ArrayList<>();
 	
 	@Bean
