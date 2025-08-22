@@ -1,26 +1,21 @@
 package com.openclassrooms.SafetyNetAlerts.repository;
 
 import com.openclassrooms.SafetyNetAlerts.model.FireStation;
+import com.openclassrooms.SafetyNetAlerts.repository.impl.FireStationRepositoryImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.test.context.SpringBootTest;
-
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
 public class FireStationRepositoryTest {
 
-    @Autowired
-    @Qualifier("fireStationRepoSingleton")
     private FireStationRepository fireStationRepository;
 
     @BeforeEach
     public void setUp() {
-        fireStationRepository.clear();
+        this.fireStationRepository = new FireStationRepositoryImpl();
+        this.fireStationRepository.clear();
     }
 
     @Test

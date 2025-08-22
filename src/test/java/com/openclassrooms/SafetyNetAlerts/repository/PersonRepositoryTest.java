@@ -1,26 +1,22 @@
 package com.openclassrooms.SafetyNetAlerts.repository;
 
 import com.openclassrooms.SafetyNetAlerts.model.Person;
+import com.openclassrooms.SafetyNetAlerts.repository.impl.PersonRepositoryImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
 public class PersonRepositoryTest {
 
-    @Autowired
-    @Qualifier("personRepoSingleton")
     private PersonRepository personRepository;
 
     @BeforeEach
     public void setUp() {
-        personRepository.clear();
+        this.personRepository = new PersonRepositoryImpl();
+        this.personRepository.clear();
     }
 
     @Test

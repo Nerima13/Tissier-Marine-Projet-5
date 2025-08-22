@@ -1,26 +1,22 @@
 package com.openclassrooms.SafetyNetAlerts.repository;
 
 import com.openclassrooms.SafetyNetAlerts.model.MedicalRecord;
+import com.openclassrooms.SafetyNetAlerts.repository.impl.MedicalRecordRepositoryImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
 public class MedicalRecordRepositoryTest {
 
-    @Autowired
-    @Qualifier("medicalRecordRepoSingleton")
     private MedicalRecordRepository medicalRecordRepository;
 
     @BeforeEach
     public void setUp() {
-        medicalRecordRepository.clear();
+        this.medicalRecordRepository = new MedicalRecordRepositoryImpl();
+        this.medicalRecordRepository.clear();
     }
 
     @Test
