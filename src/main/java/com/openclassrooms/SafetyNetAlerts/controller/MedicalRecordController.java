@@ -21,44 +21,84 @@ public class MedicalRecordController {
 	@PostMapping("/medicalRecord")
 	@ResponseStatus(code = HttpStatus.CREATED)
 	public void createMedicalRecord(@RequestBody MedicalRecord medicalRecord) {
-		logger.info("createMedicalRecord called");
-		medicalRecordService.add(medicalRecord);
-		logger.info("MedicalRecord successfully created" + medicalRecord.toString());
-	}
+        logger.info("POST /medicalRecord - creating {} {}", medicalRecord.getFirstName(), medicalRecord.getLastName());
+        logger.debug("Payload received (medical details omitted)");
+        try {
+            medicalRecordService.add(medicalRecord);
+            logger.info("POST /medicalRecord -> 201 Created ({} {})",
+                    medicalRecord.getFirstName(), medicalRecord.getLastName());
+        } catch (Exception e) {
+            logger.error("POST /medicalRecord FAILED for {} {}: {}",
+                    medicalRecord.getFirstName(), medicalRecord.getLastName(), e.getMessage(), e);
+            throw e;
+        }
+    }
 	
 	@DeleteMapping("/medicalRecord")
 	@ResponseStatus(code = HttpStatus.OK)
 	public void deleteMedicalRecord(@RequestBody MedicalRecord medicalRecord) {
-		logger.info("deleteMedicalRecord called");
-		medicalRecordService.delete(medicalRecord);
-		logger.info("MedicalRecord successfully deleted" + medicalRecord.toString());
-	}
-	
-	@PutMapping("/medicalRecord")
+        logger.info("DELETE /medicalRecord - {} {}", medicalRecord.getFirstName(), medicalRecord.getLastName());
+        try {
+            medicalRecordService.delete(medicalRecord);
+            logger.info("DELETE /medicalRecord -> 200 OK ({} {})",
+                    medicalRecord.getFirstName(), medicalRecord.getLastName());
+        } catch (Exception e) {
+            logger.error("DELETE /medicalRecord FAILED for {} {}: {}",
+                    medicalRecord.getFirstName(), medicalRecord.getLastName(), e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    @PutMapping("/medicalRecord")
 	@ResponseStatus(code = HttpStatus.OK)
 	public void updateMedicalRecord(@RequestBody MedicalRecord medicalRecord) {
-		logger.info("updateMedicalRecord called");
-		medicalRecordService.update(medicalRecord);
-		logger.info("MedicalRecord successfully updated" + medicalRecord.toString());
-	}
+        logger.info("PUT /medicalRecord - {} {}", medicalRecord.getFirstName(), medicalRecord.getLastName());
+        logger.debug("Payload received (medical details omitted)");
+        try {
+            medicalRecordService.update(medicalRecord);
+            logger.info("PUT /medicalRecord -> 200 OK ({} {})",
+                    medicalRecord.getFirstName(), medicalRecord.getLastName());
+        } catch (Exception e) {
+            logger.error("PUT /medicalRecord FAILED for {} {}: {}",
+                    medicalRecord.getFirstName(), medicalRecord.getLastName(), e.getMessage(), e);
+            throw e;
+        }
+    }
 	
 	@GetMapping("/medicalRecord")
 	@ResponseStatus(code = HttpStatus.OK)
 	public MedicalRecord getMedicalRecord(@RequestParam("firstName") String firstName,
 										  @RequestParam("lastName") String lastName) {
-		logger.info("getMedicalRecord called");
-		MedicalRecord medicalRecord = new MedicalRecord(firstName, lastName);
-		medicalRecord = medicalRecordService.get(medicalRecord);
-		logger.info("MedicalRecord response : " + medicalRecord.toString());
-		return medicalRecord;
-	}
+        logger.info("GET /medicalRecord firstName='{}' lastName='{}'", firstName, lastName);
+        try {
+            MedicalRecord key = new MedicalRecord(firstName, lastName);
+            MedicalRecord medicalRecord = medicalRecordService.get(key);
+            if (medicalRecord == null) {
+                logger.info("GET /medicalRecord -> 200 OK, result=empty ({} {})", firstName, lastName);
+            } else {
+                logger.info("GET /medicalRecord -> 200 OK (found=true)");
+                logger.debug("Record loaded for {} {} (medical details omitted)", firstName, lastName);
+            }
+            return medicalRecord;
+        } catch (Exception e) {
+            logger.error("GET /medicalRecord FAILED for {} {}: {}", firstName, lastName, e.getMessage(), e);
+            throw e;
+        }
+    }
 	
 	@GetMapping("/medicalRecords")
     public List<MedicalRecord> getMedicalRecordList() {
-        logger.info("getMedicalRecordList called");
-        List<MedicalRecord> medicalRecordList = medicalRecordService.findAll();
-        logger.info("MedicalRecord list response : " + medicalRecordList.toString());
-        return medicalRecordList;
+        logger.info("GET /medicalRecords");
+        try {
+            List<MedicalRecord> medicalRecordList = medicalRecordService.findAll();
+            logger.info("GET /medicalRecords -> 200 OK, count={}", medicalRecordList.size());
+            logger.debug("First results (details omitted): {}",
+                    medicalRecordList.stream().limit(3).map(m -> m.getFirstName() + " " + m.getLastName()).toList());
+            return medicalRecordList;
+        } catch (Exception e) {
+            logger.error("GET /medicalRecords FAILED: {}", e.getMessage(), e);
+            throw e;
+        }
     }
 }
 

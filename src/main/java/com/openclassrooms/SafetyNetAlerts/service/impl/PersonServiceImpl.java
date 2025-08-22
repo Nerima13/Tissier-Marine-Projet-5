@@ -20,6 +20,8 @@ import com.openclassrooms.SafetyNetAlerts.model.FireStation;
 import com.openclassrooms.SafetyNetAlerts.model.MedicalRecord;
 import com.openclassrooms.SafetyNetAlerts.service.FireStationService;
 import com.openclassrooms.SafetyNetAlerts.service.MedicalRecordService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -31,258 +33,360 @@ import com.openclassrooms.SafetyNetAlerts.service.PersonService;
 @Service
 public class PersonServiceImpl implements PersonService {
 
-@Autowired
+    private static final Logger logger = LogManager.getLogger(PersonServiceImpl.class);
+
+    @Autowired
     FireStationService fireStationService;
-@Autowired
+    @Autowired
     MedicalRecordService medicalRecordService;
 
-	@Autowired
-	@Qualifier("personRepoSingleton")
+    @Autowired
+    @Qualifier("personRepoSingleton")
     private PersonRepository personRepository;
 
     @Override
     public void add(Person person) {
-        personRepository.add(person);
+        logger.info("Add person {} {}", person.getFirstName(), person.getLastName());
+        logger.debug("Add payload: {}", person);
+        try {
+            personRepository.add(person);
+            logger.info("Person added successfully: {} {}", person.getFirstName(), person.getLastName());
+        } catch (Exception e) {
+            logger.error("Add person FAILED for {} {}: {}", person.getFirstName(), person.getLastName(), e.getMessage(), e);
+            throw e;
+        }
     }
 
     @Override
     public void delete(Person person) {
-        personRepository.delete(person);
+        logger.info("Delete person {} {}", person.getFirstName(), person.getLastName());
+        try {
+            personRepository.delete(person);
+            logger.info("Person deleted successfully: {} {}", person.getFirstName(), person.getLastName());
+        } catch (Exception e) {
+            logger.error("Delete person FAILED for {} {}: {}", person.getFirstName(), person.getLastName(), e.getMessage(), e);
+            throw e;
+        }
     }
 
     @Override
     public void update(Person person) {
-        personRepository.update(person);
+        logger.info("Update person {} {}", person.getFirstName(), person.getLastName());
+        logger.debug("Update payload: {}", person);
+        try {
+            personRepository.update(person);
+            logger.info("Person updated successfully: {} {}", person.getFirstName(), person.getLastName());
+        } catch (Exception e) {
+            logger.error("Update person FAILED for {} {}: {}", person.getFirstName(), person.getLastName(), e.getMessage(), e);
+            throw e;
+        }
     }
 
     @Override
     public Person get(Person person) {
-        return personRepository.get(person);
+        logger.debug("Get person {} {}", person.getFirstName(), person.getLastName());
+        try {
+            Person result = personRepository.get(person);
+            if (result == null) {
+                logger.info("Get person -> result=empty ({} {})", person.getFirstName(), person.getLastName());
+            } else {
+                logger.info("Get person -> found ({} {})", person.getFirstName(), person.getLastName());
+                logger.debug("Get person -> {}", result);
+            }
+            return result;
+        } catch (Exception e) {
+            logger.error("Get person FAILED for {} {}: {}", person.getFirstName(), person.getLastName(), e.getMessage(), e);
+            throw e;
+        }
     }
 
     @Override
     public List<Person> findAll() {
-        return personRepository.findAll();
+        logger.info("FindAll persons");
+        try {
+            List<Person> list = personRepository.findAll();
+            logger.info("FindAll -> count={}", list.size());
+            logger.debug("FindAll sample: {}", list.stream().limit(3).toList());
+            return list;
+        } catch (Exception e) {
+            logger.error("findAll persons FAILED: {}", e.getMessage(), e);
+            throw e;
+        }
     }
 
     public int getAge(Person person) {
-        MedicalRecord medicalRecord = new MedicalRecord(person.getFirstName(), person.getLastName());
-        String birthdateAsString = medicalRecordService.get(medicalRecord).getBirthdate();
-        LocalDate birthdate = LocalDate.parse(birthdateAsString, DateTimeFormatter.ofPattern("MM/dd/yyyy"));
-
-        return Period.between(birthdate, LocalDate.now()).getYears();
+        logger.debug("Compute age for {} {}", person.getFirstName(), person.getLastName());
+        try {
+            MedicalRecord medicalRecord = new MedicalRecord(person.getFirstName(), person.getLastName());
+            String birthdateAsString = medicalRecordService.get(medicalRecord).getBirthdate();
+            LocalDate birthdate = LocalDate.parse(birthdateAsString, DateTimeFormatter.ofPattern("MM/dd/yyyy"));
+            int years = Period.between(birthdate, LocalDate.now()).getYears();
+            logger.debug("Computed age for {} {} -> {}", person.getFirstName(), person.getLastName(), years);
+            return years;
+        } catch (Exception e) {
+            logger.error("Compute age FAILED for {} {}: {}", person.getFirstName(), person.getLastName(), e.getMessage(), e);
+            throw e;
+        }
     }
 
     @Override
     public FireStationCoverageDTO getPersonsCoveredByStation(String stationNumber) {
+        logger.info("Coverage by station stationNumber={}", stationNumber);
         FireStationCoverageDTO result = new FireStationCoverageDTO();
 
-        if (stationNumber == null) {
-            return result;
-        }
-
-        List<PersonByStationNumberDTO> coveredPersons = new ArrayList<>();
-        int nbAdult = 0;
-        int nbChild = 0;
-
-        // 1) Addresses of firestations covered by the station
-        List<String> coveredAddresses = new ArrayList<>();
-        List<FireStation> fireStations = fireStationService.findAll();
-        for (FireStation f : fireStations) {
-            if (f != null && f.getStation() != null && f.getStation().equals(stationNumber)) {
-                coveredAddresses.add(f.getAddress());
+        try {
+            if (stationNumber == null) {
+                logger.info("Coverage by station -> stationNumber=null -> empty result");
+                return result;
             }
-        }
 
-        // 2) Browse all people
-        List<Person> persons = personRepository.findAll();
-        for (Person p : persons) {
-            if (p == null || p.getAddress() == null) continue;
+            List<PersonByStationNumberDTO> coveredPersons = new ArrayList<>();
+            int nbAdult = 0;
+            int nbChild = 0;
 
-            // Check that their addresses are covered
-            boolean isCovered = false;
-            for (String addr : coveredAddresses) {
-                if (addr != null && addr.equals(p.getAddress())) {
-                    isCovered = true;
-                    break;
+            // 1) Addresses of firestations covered by the station
+            List<String> coveredAddresses = new ArrayList<>();
+            List<FireStation> fireStations = fireStationService.findAll();
+            logger.debug("Found {} fireStation mappings", fireStations.size());
+
+            for (FireStation f : fireStations) {
+                if (f != null && f.getStation() != null && f.getStation().equals(stationNumber)) {
+                    coveredAddresses.add(f.getAddress());
                 }
             }
-            if (!isCovered) continue;
+            logger.debug("Station {} covers {} addresses", stationNumber, coveredAddresses.size());
 
-            // 3) Build the DTO
-            PersonByStationNumberDTO dto = new PersonByStationNumberDTO();
-            dto.setFirstName(p.getFirstName());
-            dto.setLastName(p.getLastName());
-            dto.setAddress(p.getAddress());
-            dto.setPhone(p.getPhone());
+            // 2) Browse all people
+            List<Person> persons = personRepository.findAll();
+            logger.debug("Total persons in repository: {}", persons.size());
 
-            // Avoid duplicate people
-            boolean alreadyInList = false;
-            for (PersonByStationNumberDTO person : coveredPersons) {
-                boolean sameFirstName = p.getFirstName() != null
-                        && p.getFirstName().equals(person.getFirstName());
-                boolean sameLastName  = p.getLastName() != null
-                        && p.getLastName().equals(person.getLastName());
-                boolean sameAddress   = p.getAddress() != null
-                        && p.getAddress().equals(person.getAddress());
+            for (Person p : persons) {
+                if (p == null || p.getAddress() == null) continue;
 
-                if (sameFirstName && sameLastName && sameAddress) {
-                    alreadyInList = true;
-                    break;
-                }
-            }
-            if (!alreadyInList) {
-                coveredPersons.add(dto);
-
-                // 4) Count children (≤18) and adults
-                int age = getAge(p);
-                if (age <= 18) {
-                    nbChild++;
-                } else {
-                    nbAdult++;
-                }
-            }
-        }
-
-        result.setStation(stationNumber);
-        result.setInfoPerson(coveredPersons);
-        result.setNbAdult(nbAdult);
-        result.setNbChild(nbChild);
-        return result;
-    }
-
-
-    @Override
-    public List<ChildDTO> getChildInfos(String address) {
-        List<ChildDTO> result = new ArrayList<>();
-
-        if (address == null) {
-            return result;
-        }
-
-        // 1) List the people living at this address
-        List<Person> personsAtAddress = new ArrayList<>();
-        List<Person> persons = personRepository.findAll();
-
-        for (int i = 0; i < persons.size(); i++) {
-            Person p = persons.get(i);
-            if (p != null && p.getAddress() != null && p.getAddress().equals(address)) {
-                personsAtAddress.add(p);
-            }
-        }
-        if (personsAtAddress.isEmpty()) {
-            return result;
-        }
-
-        // 2) For each person at the address, if a child (≤ 18), construct the DTO
-        for (int i = 0; i < personsAtAddress.size(); i++) {
-            Person child = personsAtAddress.get(i);
-
-            int age = getAge(child);
-
-            if (age <= 18) {
-                ChildDTO dto = new ChildDTO();
-                dto.setFirstName(child.getFirstName());
-                dto.setLastName(child.getLastName());
-                dto.setAge(age);
-
-                // 3) List of other household members
-                List<FamilyMemberDTO> family = new ArrayList<>();
-
-                for (int f = 0; f < personsAtAddress.size(); f++) {
-                    Person familyMember = personsAtAddress.get(f);
-                    if (familyMember != null) {
-                        boolean sameFirst = familyMember.getFirstName() != null
-                                && familyMember.getFirstName().equals(child.getFirstName());
-                        boolean sameLast  = familyMember.getLastName()  != null
-                                && familyMember.getLastName().equals(child.getLastName());
-
-                        // Exclude the child himself
-                        if (!(sameFirst && sameLast)) {
-                            FamilyMemberDTO member = new FamilyMemberDTO();
-                            member.setFirstName(familyMember.getFirstName());
-                            member.setLastName(familyMember.getLastName());
-
-                            family.add(member);
-                        }
-                    }
-                }
-                dto.setFamily(family);
-
-                result.add(dto);
-            }
-        }
-        return result;
-    }
-
-    @Override
-    public List<String> getPhoneByFireStation(String fireStationNumber) {
-        List<String> result = new ArrayList<>();
-
-        if (fireStationNumber == null) {
-            return result;
-        }
-
-        // 1) Retrieve the addresses covered by the requested station
-        List<String> addresses = new ArrayList<>();
-        List<FireStation> fireStations = fireStationService.findAll();
-
-        for (int f = 0; f < fireStations.size(); f++) {
-            FireStation fs = fireStations.get(f);
-            if (fs != null && fs.getStation() != null && fs.getAddress() != null) {
-                if (fs.getStation().equals(fireStationNumber)) {
-                    addresses.add(fs.getAddress());
-                }
-            }
-        }
-
-        // If no address is covered, we return []
-        if (addresses.isEmpty()) {
-            return result;
-        }
-
-        // 2) List the people living at these addresses
-        List<Person> coveredPersons = new ArrayList<>();
-        List<Person> persons = personRepository.findAll();
-
-        for (int p = 0; p < persons.size(); p++) {
-            Person person = persons.get(p);
-            if (person != null && person.getAddress() != null && person.getPhone() != null) {
-
+                // Check that their addresses are covered
                 boolean isCovered = false;
-                for (int a = 0; a < addresses.size(); a++) {
-                    if (person.getAddress().equals(addresses.get(a))) {
+                for (String addr : coveredAddresses) {
+                    if (addr != null && addr.equals(p.getAddress())) {
                         isCovered = true;
                         break;
                     }
                 }
-                if (isCovered) {
-                    coveredPersons.add(person);
+                if (!isCovered) continue;
+
+                // 3) Build the DTO
+                PersonByStationNumberDTO dto = new PersonByStationNumberDTO();
+                dto.setFirstName(p.getFirstName());
+                dto.setLastName(p.getLastName());
+                dto.setAddress(p.getAddress());
+                dto.setPhone(p.getPhone());
+
+                // Avoid duplicate people
+                boolean alreadyInList = false;
+                for (PersonByStationNumberDTO person : coveredPersons) {
+                    boolean sameFirstName = p.getFirstName() != null
+                            && p.getFirstName().equals(person.getFirstName());
+                    boolean sameLastName = p.getLastName() != null
+                            && p.getLastName().equals(person.getLastName());
+                    boolean sameAddress = p.getAddress() != null
+                            && p.getAddress().equals(person.getAddress());
+
+                    if (sameFirstName && sameLastName && sameAddress) {
+                        alreadyInList = true;
+                        break;
+                    }
+                }
+                if (!alreadyInList) {
+                    coveredPersons.add(dto);
+
+                    // 4) Count children (≤18) and adults
+                    int age = getAge(p);
+                    if (age <= 18) {
+                        nbChild++;
+                    } else {
+                        nbAdult++;
+                    }
                 }
             }
-        }
 
-        // 3) Extract phone numbers
-        for (int i = 0; i < coveredPersons.size(); i++) {
-            String phone = coveredPersons.get(i).getPhone();
-            if (phone != null) {
-                result.add(phone);
-            }
+            result.setStation(stationNumber);
+            result.setInfoPerson(coveredPersons);
+            result.setNbAdult(nbAdult);
+            result.setNbChild(nbChild);
+
+            logger.info("Coverage station={} -> residents={}, adults={}, children={}",
+                    stationNumber, coveredPersons.size(), nbAdult, nbChild);
+            logger.debug("Coverage sample phones: {}",
+                    coveredPersons.stream().map(PersonByStationNumberDTO::getPhone).limit(3).toList());
+            return result;
+
+        } catch (Exception e) {
+            logger.error("Coverage by station FAILED for station {}: {}", stationNumber, e.getMessage(), e);
+            throw e;
         }
-        return result;
+    }
+
+    @Override
+    public List<ChildDTO> getChildInfos(String address) {
+        logger.info("ChildAlert for address='{}'", address);
+        List<ChildDTO> result = new ArrayList<>();
+
+        try {
+            if (address == null) {
+                logger.info("childAlert -> address=null -> empty result");
+                return result;
+            }
+
+            // 1) List the people living at this address
+            List<Person> personsAtAddress = new ArrayList<>();
+            List<Person> persons = personRepository.findAll();
+            logger.debug("Persons total: {}", persons.size());
+
+            for (int i = 0; i < persons.size(); i++) {
+                Person p = persons.get(i);
+                if (p != null && p.getAddress() != null && p.getAddress().equals(address)) {
+                    personsAtAddress.add(p);
+                }
+            }
+            logger.debug("Persons at address='{}': {}", address, personsAtAddress.size());
+            if (personsAtAddress.isEmpty()) {
+                logger.info("childAlert -> 0 resident at address '{}'", address);
+                return result;
+            }
+
+            // 2) For each person at the address, if a child (≤ 18), construct the DTO
+            for (int i = 0; i < personsAtAddress.size(); i++) {
+                Person child = personsAtAddress.get(i);
+
+                int age = getAge(child);
+
+                if (age <= 18) {
+                    ChildDTO dto = new ChildDTO();
+                    dto.setFirstName(child.getFirstName());
+                    dto.setLastName(child.getLastName());
+                    dto.setAge(age);
+
+                    // 3) List of other household members
+                    List<FamilyMemberDTO> family = new ArrayList<>();
+
+                    for (int f = 0; f < personsAtAddress.size(); f++) {
+                        Person familyMember = personsAtAddress.get(f);
+                        if (familyMember != null) {
+                            boolean sameFirst = familyMember.getFirstName() != null
+                                    && familyMember.getFirstName().equals(child.getFirstName());
+                            boolean sameLast = familyMember.getLastName() != null
+                                    && familyMember.getLastName().equals(child.getLastName());
+
+                            // Exclude the child himself
+                            if (!(sameFirst && sameLast)) {
+                                FamilyMemberDTO member = new FamilyMemberDTO();
+                                member.setFirstName(familyMember.getFirstName());
+                                member.setLastName(familyMember.getLastName());
+
+                                family.add(member);
+                            }
+                        }
+                    }
+                    dto.setFamily(family);
+                    result.add(dto);
+                }
+            }
+            logger.info("childAlert address='{}' -> children={}", address, result.size());
+            logger.debug("childAlert sample: {}", result.stream().limit(2).toList());
+            return result;
+
+        } catch (Exception e) {
+            logger.error("childAlert FAILED for address {}: {}", address, e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    @Override
+    public List<String> getPhoneByFireStation(String fireStationNumber) {
+        logger.info("PhoneAlert for station={}", fireStationNumber);
+        List<String> result = new ArrayList<>();
+
+        try {
+            if (fireStationNumber == null) {
+                logger.info("phoneAlert -> station=null -> empty result");
+                return result;
+            }
+
+            // 1) Retrieve the addresses covered by the requested station
+            List<String> addresses = new ArrayList<>();
+            List<FireStation> fireStations = fireStationService.findAll();
+            logger.debug("Mappings total: {}", fireStations.size());
+
+            for (int f = 0; f < fireStations.size(); f++) {
+                FireStation fs = fireStations.get(f);
+                if (fs != null && fs.getStation() != null && fs.getAddress() != null) {
+                    if (fs.getStation().equals(fireStationNumber)) {
+                        addresses.add(fs.getAddress());
+                    }
+                }
+            }
+
+            // If no address is covered, we return []
+            if (addresses.isEmpty()) {
+                logger.info("phoneAlert station={} -> 0 covered address", fireStationNumber);
+                return result;
+            }
+            logger.debug("phoneAlert station={} covers {} addresses", fireStationNumber, addresses.size());
+
+            // 2) List the people living at these addresses
+            List<Person> coveredPersons = new ArrayList<>();
+            List<Person> persons = personRepository.findAll();
+            logger.debug("Persons total: {}", persons.size());
+
+            for (int p = 0; p < persons.size(); p++) {
+                Person person = persons.get(p);
+                if (person != null && person.getAddress() != null && person.getPhone() != null) {
+
+                    boolean isCovered = false;
+                    for (int a = 0; a < addresses.size(); a++) {
+                        if (person.getAddress().equals(addresses.get(a))) {
+                            isCovered = true;
+                            break;
+                        }
+                    }
+                    if (isCovered) {
+                        coveredPersons.add(person);
+                    }
+                }
+            }
+
+            // 3) Extract phone numbers
+            for (int i = 0; i < coveredPersons.size(); i++) {
+                String phone = coveredPersons.get(i).getPhone();
+                if (phone != null) {
+                    result.add(phone);
+                }
+            }
+
+            logger.info("phoneAlert station={} -> phones={}", fireStationNumber, result.size());
+            logger.debug("phoneAlert sample: {}", result.stream().limit(3).toList());
+            return result;
+
+        } catch (Exception e) {
+            logger.error("phoneAlert FAILED for station {}: {}", fireStationNumber, e.getMessage(), e);
+            throw e;
+        }
     }
 
     @Override
     public FireAlertAddressDTO getFireAlert(String address) {
+        logger.info("FireAlert for address='{}'", address);
         FireAlertAddressDTO result = new FireAlertAddressDTO();
 
-        if (address == null) {
-            return result;
-        }
+        try {
+            if (address == null) {
+                logger.info("fireAlert -> address=null -> empty result");
+                return result;
+            }
 
         // 1) Find the station number that serves the address
         String stationNumber = null;
         List<FireStation> fireStations = fireStationService.findAll();
+        logger.debug("Found {} fireStation mappings", fireStations.size());
 
         for (int f = 0; f < fireStations.size(); f++) {
             FireStation fs = fireStations.get(f);
@@ -295,6 +399,7 @@ public class PersonServiceImpl implements PersonService {
 
         // 2) List the people living at this address
         List<Person> persons = personRepository.findAll();
+        logger.debug("Persons total: {}", persons.size());
         List<FireAlertPersonDTO> residents = new ArrayList<FireAlertPersonDTO>();
 
         for (int i = 0; i < persons.size(); i++) {
@@ -328,19 +433,34 @@ public class PersonServiceImpl implements PersonService {
             }
         }
         result.setResidents(residents);
+
+        logger.info("fireAlert address='{}' -> residents={}", address, residents.size());
+        logger.debug("fireAlert sample residents (names only): {}",
+                    residents.stream().limit(2).map(r -> r.getFirstName() + " " + r.getLastName()).toList());
+        logger.debug("fireAlert medical details loaded (omitted in logs)");
         return result;
+
+        } catch (Exception e) {
+            logger.error("fireAlert FAILED for address {}: {}", address, e.getMessage(), e);
+            throw e;
+        }
     }
 
     @Override
     public FloodAlertDTO getFloodAlert(List<String> stations) {
+        logger.info("FloodAlert for stations={}", stations);
         FloodAlertDTO result = new FloodAlertDTO();
 
-        if (stations == null) {
-            return result;
-        }
+        try {
+            if (stations == null) {
+                logger.info("floodAlert -> stations=null -> empty result");
+                return result;
+            }
 
         List<FireStation> fireStations = fireStationService.findAll();
         List<Person> persons = personRepository.findAll();
+        logger.debug("Found {} fireStation mappings", fireStations.size());
+        logger.debug("Persons total: {}", persons.size());
 
         // 1) Retrieve the addresses covered by each station
         List<String> coveredAddresses = new ArrayList<>();
@@ -365,6 +485,7 @@ public class PersonServiceImpl implements PersonService {
                 }
             }
         }
+        logger.debug("floodAlert -> stations={} cover {} addresses", stations, coveredAddresses.size());
 
         // 2) For each address covered, add the residents + requested information
         for (int a = 0; a < coveredAddresses.size(); a++) {
@@ -399,20 +520,35 @@ public class PersonServiceImpl implements PersonService {
             result.setStations(stations);
             result.getAddressList().add(addressDTO);
         }
+        logger.info("floodAlert stations={} -> households={}", stations, result.getAddressList().size());
+        logger.debug("floodAlert first addresses: {}",
+                result.getAddressList().stream().limit(2).map(FloodAlertAddressDTO::getAddress).toList());
+        logger.debug("floodAlert medical details loaded (omitted in logs)");
         return result;
+
+        } catch (Exception e) {
+            logger.error("floodAlert FAILED for stations {}: {}", stations, e.getMessage(), e);
+            throw e;
+        }
     }
+
 
     @Override
     public List<PersonInfoDTO> getPersonInfo(String lastName) {
+        logger.info("PersonInfo lastName='{}'", lastName);
         List<PersonInfoDTO> result = new ArrayList<>();
 
-        if (lastName == null) {
-            return result;
-        }
+        try {
+            if (lastName == null) {
+                logger.info("personInfo -> lastName=null -> empty result");
+                return result;
+            }
 
-        // 1) List all people and their medical records
+            // 1) List all people and their medical records
         List<Person> persons = personRepository.findAll();
         List<MedicalRecord> medicalRecords = medicalRecordService.findAll();
+        logger.debug("personInfo repository sizes: persons={}, medicalRecords={}",
+                persons.size(), medicalRecords.size());
 
         // Pick out those with the same lastName
         for (Person person : persons) {
@@ -448,26 +584,49 @@ public class PersonServiceImpl implements PersonService {
                 result.add(dto);
             }
         }
+        logger.info("personInfo lastName='{}' -> results={}", lastName, result.size());
+        logger.debug("personInfo sample names: {}",
+                result.stream().limit(2).map(x -> x.getFirstName() + " " + x.getLastName()).toList());
+        logger.debug("personInfo medical details loaded (omitted in logs)");
         return result;
+
+        } catch (Exception e) {
+            logger.error("personInfo FAILED for lastName {}: {}", lastName, e.getMessage(), e);
+            throw e;
+        }
     }
+
 
     @Override
     public List<String> getEmail(String city) {
+        logger.info("CommunityEmail city='{}'", city);
         List<String> result = new ArrayList<>();
 
-        if (city == null) {
-            return result;
-        }
-
-        // 1) List all people
-        List<Person> persons = personRepository.findAll();
-
-        // 2) Get the email of the residents
-        for (Person person : persons) {
-            if (person.getCity().equals(city)) {
-                result.add(person.getEmail());
+        try {
+            if (city == null) {
+                logger.info("communityEmail -> city=null -> empty result");
+                return result;
             }
-        }
+
+            // 1) List all people
+            List<Person> persons = personRepository.findAll();
+            logger.debug("communityEmail persons total: {}", persons.size());
+
+            // 2) Get the email of the residents
+            for (Person person : persons) {
+                if (person.getCity().equals(city)) {
+                    result.add(person.getEmail());
+                }
+            }
+
+        logger.info("communityEmail city='{}' -> emails={}", city, result.size());
+        logger.debug("communityEmail emails loaded (omitted in logs)");
         return result;
+
+        } catch (Exception e) {
+            logger.error("communityEmail FAILED for city {}: {}", city, e.getMessage(), e);
+            throw e;
+        }
     }
 }
+

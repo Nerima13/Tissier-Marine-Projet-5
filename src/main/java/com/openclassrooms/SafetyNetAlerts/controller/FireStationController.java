@@ -22,43 +22,81 @@ public class FireStationController {
 	@PostMapping("/firestation")
 	@ResponseStatus(code = HttpStatus.CREATED)
 	public void createFireStation(@RequestBody FireStation fireStation) {
-		logger.info("createFireStation called");
-		fireStationService.add(fireStation);
-		logger.info("Firestation successfully created" + fireStation.toString());
-	}
+        logger.info("POST /firestation - add mapping {} -> station {}", fireStation.getAddress(), fireStation.getStation());
+        logger.debug("Payload: {}", fireStation);
+        try {
+            fireStationService.add(fireStation);
+            logger.info("POST /firestation -> 201 Created");
+        } catch (Exception e) {
+            logger.error("POST /firestation FAILED for mapping {} -> {}: {}", fireStation.getAddress(), fireStation.getStation(), e.getMessage(), e);
+            throw e;
+        }
+    }
 		
 	@DeleteMapping("/firestation")
 	@ResponseStatus(code = HttpStatus.OK)
 	public void deleteFireStation(@RequestBody FireStation fireStation) {
-		logger.info("deleteFireStation called");
-		fireStationService.delete(fireStation);
-		logger.info("Firestation successfully deleted" + fireStation.toString());
-	}
+        logger.info("DELETE /firestation - {} -> station {}",
+                fireStation.getAddress(), fireStation.getStation());
+        logger.debug("Payload: {}", fireStation);
+        try {
+            fireStationService.delete(fireStation);
+            logger.info("DELETE /firestation -> 200 OK");
+        } catch (Exception e) {
+            logger.error("DELETE /firestation FAILED for mapping {} -> {}: {}",
+                    fireStation.getAddress(), fireStation.getStation(), e.getMessage(), e);
+            throw e;
+        }
+    }
 		
 	@PutMapping("/firestation")
 	@ResponseStatus(code = HttpStatus.OK)
 	public void updateFireStation(@RequestBody FireStation fireStation) {
-		logger.info("updateFireStation called");
-		fireStationService.update(fireStation);
-		logger.info("Firestation successfully updated" + fireStation.toString());
-	}
+        logger.info("PUT /firestation - {} -> station {}",
+                fireStation.getAddress(), fireStation.getStation());
+        logger.debug("Payload: {}", fireStation);
+        try {
+            fireStationService.update(fireStation);
+            logger.info("PUT /firestation -> 200 OK");
+        } catch (Exception e) {
+            logger.error("PUT /firestation FAILED for mapping {} -> {}: {}",
+                    fireStation.getAddress(), fireStation.getStation(), e.getMessage(), e);
+            throw e;
+        }
+    }
 		
 	@GetMapping("/firestation")
 	@ResponseStatus(code = HttpStatus.OK)
 	public FireStation getFireStation(@RequestParam("address") String address) {
-		logger.info("getFireStation called");
-		FireStation fireStation = new FireStation(address);
-		fireStation = fireStationService.get(fireStation);
-		logger.info("Firestation response : " + fireStation.toString());
-		return fireStation;
-	}
+        logger.info("GET /firestation?address={}", address);
+        try {
+            FireStation fireStation = fireStationService.get(new FireStation(address, null));
+            if (fireStation == null) {
+                logger.info("GET /firestation -> 200 OK, result=empty (address={})", address);
+            } else {
+                logger.info("GET /firestation -> 200 OK (found=true)");
+                logger.debug("Result: {}", fireStation);
+            }
+            return fireStation;
+        } catch (Exception e) {
+            logger.error("GET /firestation FAILED for address {}: {}", address, e.getMessage(), e);
+            throw e;
+        }
+    }
 		
 	@GetMapping("/firestations")
 	public List<FireStation> getFireStationList() {
-	    logger.info("getFireStationList called");
-	    List<FireStation> fireStationList = fireStationService.findAll();
-	    logger.info("Firestation list response : " + fireStationList.toString());
-	    return fireStationList;
-	}
+        logger.info("GET /firestations");
+        try {
+            List<FireStation> list = fireStationService.findAll();
+            logger.info("GET /firestations -> 200 OK, count={}", list.size());
+            logger.debug("First results: {}", list.stream().limit(3).toList());
+            return list;
+        } catch (Exception e) {
+            logger.error("GET /firestations FAILED: {}", e.getMessage(), e);
+            throw e;
+        }
+    }
 }
+
 

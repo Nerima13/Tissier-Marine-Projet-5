@@ -11,7 +11,6 @@ import java.util.List;
 
 public interface PersonService extends CrudService<Person> {
 
-
     FireStationCoverageDTO getPersonsCoveredByStation(String station);
 
     List<ChildDTO> getChildInfos(String address);

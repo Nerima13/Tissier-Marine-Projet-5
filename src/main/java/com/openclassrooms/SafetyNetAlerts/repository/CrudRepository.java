@@ -17,6 +17,4 @@ public interface CrudRepository<T> {
 	public void addAll(List<T> elements);
 
     public void clear();
-
-
 }
