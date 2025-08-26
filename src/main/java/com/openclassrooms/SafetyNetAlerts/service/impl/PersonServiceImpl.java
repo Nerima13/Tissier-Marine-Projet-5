@@ -414,21 +414,18 @@ public class PersonServiceImpl implements PersonService {
                 dto.setAge(getAge(p));
 
                 MedicalRecord mr = medicalRecordService.get(new MedicalRecord(p.getFirstName(), p.getLastName()));
-                if (mr != null) {
-                    if (mr.getMedications() != null) {
-                        dto.setMedications(new ArrayList<>(mr.getMedications()));
-                    } else {
-                        dto.setMedications(new ArrayList<>());
-                    }
-                    if (mr.getAllergies() != null) {
-                        dto.setAllergies(new ArrayList<>(mr.getAllergies()));
-                    } else {
-                        dto.setAllergies(new ArrayList<>());
-                    }
-                } else {
-                    dto.setMedications(new ArrayList<>());
-                    dto.setAllergies(new ArrayList<>());
+
+                int age = 0;
+                if (mr != null && mr.getBirthdate() != null) {
+                    try {
+                        LocalDate dob = LocalDate.parse(mr.getBirthdate(), DateTimeFormatter.ofPattern("MM/dd/yyyy"));
+                        age = Period.between(dob, LocalDate.now()).getYears();
+                    } catch (Exception ignored) { /* age=0 si date invalide */ }
                 }
+                dto.setAge(age);
+
+                dto.setMedications(mr != null && mr.getMedications() != null ? new ArrayList<>(mr.getMedications()) : new ArrayList<>());
+                dto.setAllergies(mr != null && mr.getAllergies() != null ? new ArrayList<>(mr.getAllergies()) : new ArrayList<>());
                 residents.add(dto);
             }
         }
