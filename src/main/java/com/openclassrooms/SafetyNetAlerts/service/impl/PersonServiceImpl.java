@@ -411,7 +411,6 @@ public class PersonServiceImpl implements PersonService {
                 dto.setFirstName(p.getFirstName());
                 dto.setLastName(p.getLastName());
                 dto.setPhone(p.getPhone());
-                dto.setAge(getAge(p));
 
                 MedicalRecord mr = medicalRecordService.get(new MedicalRecord(p.getFirstName(), p.getLastName()));
 
@@ -420,12 +419,18 @@ public class PersonServiceImpl implements PersonService {
                     try {
                         LocalDate dob = LocalDate.parse(mr.getBirthdate(), DateTimeFormatter.ofPattern("MM/dd/yyyy"));
                         age = Period.between(dob, LocalDate.now()).getYears();
-                    } catch (Exception ignored) { /* age=0 si date invalide */ }
+                    } catch (Exception ignored) {}
                 }
                 dto.setAge(age);
 
-                dto.setMedications(mr != null && mr.getMedications() != null ? new ArrayList<>(mr.getMedications()) : new ArrayList<>());
-                dto.setAllergies(mr != null && mr.getAllergies() != null ? new ArrayList<>(mr.getAllergies()) : new ArrayList<>());
+                List<String> meds = new ArrayList<>();
+                if (mr != null && mr.getMedications() != null) meds.addAll(mr.getMedications());
+                dto.setMedications(meds);
+
+                List<String> allergies = new ArrayList<>();
+                if (mr != null && mr.getAllergies() != null) allergies.addAll(mr.getAllergies());
+                dto.setAllergies(allergies);
+
                 residents.add(dto);
             }
         }
@@ -454,81 +459,91 @@ public class PersonServiceImpl implements PersonService {
                 return result;
             }
 
-        List<FireStation> fireStations = fireStationService.findAll();
-        List<Person> persons = personRepository.findAll();
-        logger.debug("Found {} fireStation mappings", fireStations.size());
-        logger.debug("Persons total: {}", persons.size());
+            result.setStations(stations);
 
-        // 1) Retrieve the addresses covered by each station
-        List<String> coveredAddresses = new ArrayList<>();
+            List<FireStation> fireStations = fireStationService.findAll();
+            List<Person> persons = personRepository.findAll();
+            logger.debug("Found {} fireStation mappings", fireStations.size());
+            logger.debug("Persons total: {}", persons.size());
 
-        for (int s = 0; s < stations.size(); s++) {
-            String stationNumber = stations.get(s);
+            // 1) Retrieve the addresses covered by each station
+            List<String> coveredAddresses = new ArrayList<>();
 
-            for (int f = 0; f < fireStations.size(); f++) {
-                FireStation fs = fireStations.get(f);
-                if (fs != null && fs.getStation() != null && fs.getAddress() != null
-                        && fs.getStation().equals(stationNumber)) {
-                    boolean exists = false;
-                    for (int a = 0; a < coveredAddresses.size(); a++) {
-                        if (coveredAddresses.get(a).equals(fs.getAddress())) {
-                            exists = true;
-                            break;
+            for (int s = 0; s < stations.size(); s++) {
+                String stationNumber = stations.get(s);
+
+                for (int f = 0; f < fireStations.size(); f++) {
+                    FireStation fs = fireStations.get(f);
+                    if (fs != null && fs.getStation() != null && fs.getAddress() != null
+                            && fs.getStation().equals(stationNumber)) {
+                        boolean exists = false;
+                        for (int a = 0; a < coveredAddresses.size(); a++) {
+                            if (coveredAddresses.get(a).equals(fs.getAddress())) {
+                                exists = true;
+                                break;
+                            }
                         }
-                    }
-                    if (!exists) {
-                        coveredAddresses.add(fs.getAddress());
+                        if (!exists) {
+                            coveredAddresses.add(fs.getAddress());
+                        }
                     }
                 }
             }
-        }
-        logger.debug("floodAlert -> stations={} cover {} addresses", stations, coveredAddresses.size());
+            logger.debug("floodAlert -> stations={} cover {} addresses", stations, coveredAddresses.size());
 
-        // 2) For each address covered, add the residents + requested information
-        for (int a = 0; a < coveredAddresses.size(); a++) {
-            String address = coveredAddresses.get(a);
+            // 2) For each address covered, add the residents + requested information
+            for (int a = 0; a < coveredAddresses.size(); a++) {
+                String address = coveredAddresses.get(a);
 
-            FloodAlertAddressDTO addressDTO = new FloodAlertAddressDTO();
-            addressDTO.setAddress(address);
+                FloodAlertAddressDTO addressDTO = new FloodAlertAddressDTO();
+                addressDTO.setAddress(address);
 
-            for (int p = 0; p < persons.size(); p++) {
-                Person person = persons.get(p);
-                if (person != null && address.equals(person.getAddress())) {
+                for (int p = 0; p < persons.size(); p++) {
+                    Person person = persons.get(p);
+                    if (person != null && address.equals(person.getAddress())) {
 
-                    // 3) Build each person's DTO
-                    FloodAlertPersonDTO personDTO = new FloodAlertPersonDTO();
-                    personDTO.setFirstName(person.getFirstName());
-                    personDTO.setLastName(person.getLastName());
-                    personDTO.setPhone(person.getPhone());
-                    personDTO.setAge(getAge(person));
+                        // 3) Build each person's DTO
+                        FloodAlertPersonDTO personDTO = new FloodAlertPersonDTO();
+                        personDTO.setFirstName(person.getFirstName());
+                        personDTO.setLastName(person.getLastName());
+                        personDTO.setPhone(person.getPhone());
 
-                    MedicalRecord mr = medicalRecordService.get(new MedicalRecord(person.getFirstName(), person.getLastName()));
-                    if (mr != null) {
-                        personDTO.setMedications(new ArrayList<>(mr.getMedications()));
-                        personDTO.setAllergies(new ArrayList<>(mr.getAllergies()));
-                    } else {
-                        personDTO.setMedications(new ArrayList<>());
-                        personDTO.setAllergies(new ArrayList<>());
-                    }
+                        MedicalRecord mr = medicalRecordService.get(new MedicalRecord(person.getFirstName(), person.getLastName()));
 
-                    addressDTO.getListPerson().add(personDTO);
+                        int age = 0;
+                        if (mr != null && mr.getBirthdate() != null) {
+                            try {
+                                LocalDate dob = LocalDate.parse(mr.getBirthdate(), DateTimeFormatter.ofPattern("MM/dd/yyyy"));
+                                age = Period.between(dob, LocalDate.now()).getYears();
+                            } catch (Exception ignored) {
+                            }
+                        }
+                        personDTO.setAge(age);
+
+                        List<String> meds = new ArrayList<>();
+                        if (mr != null && mr.getMedications() != null) meds.addAll(mr.getMedications());
+                        personDTO.setMedications(meds);
+
+                        List<String> allergies = new ArrayList<>();
+                        if (mr != null && mr.getAllergies() != null) allergies.addAll(mr.getAllergies());
+                        personDTO.setAllergies(allergies);
+
+                        addressDTO.getListPerson().add(personDTO);
                     }
                 }
-            result.setStations(stations);
-            result.getAddressList().add(addressDTO);
-        }
-        logger.info("floodAlert stations={} -> households={}", stations, result.getAddressList().size());
-        logger.debug("floodAlert first addresses: {}",
-                result.getAddressList().stream().limit(2).map(FloodAlertAddressDTO::getAddress).toList());
-        logger.debug("floodAlert medical details loaded (omitted in logs)");
-        return result;
+                result.getAddressList().add(addressDTO);
+            }
+            logger.info("floodAlert stations={} -> households={}", stations, result.getAddressList().size());
+            logger.debug("floodAlert first addresses: {}",
+                    result.getAddressList().stream().limit(2).map(FloodAlertAddressDTO::getAddress).toList());
+            logger.debug("floodAlert medical details loaded (omitted in logs)");
+            return result;
 
         } catch (Exception e) {
             logger.error("floodAlert FAILED for stations {}: {}", stations, e.getMessage(), e);
             throw e;
         }
     }
-
 
     @Override
     public List<PersonInfoDTO> getPersonInfo(String lastName) {
@@ -592,7 +607,6 @@ public class PersonServiceImpl implements PersonService {
             throw e;
         }
     }
-
 
     @Override
     public List<String> getEmail(String city) {
