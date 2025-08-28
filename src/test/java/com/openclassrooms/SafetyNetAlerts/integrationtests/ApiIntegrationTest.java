@@ -29,7 +29,7 @@ public class ApiIntegrationTest {
                 .andExpect(jsonPath("$.lastName", is("Boyd")))
                 .andExpect(jsonPath("$.address", is("1509 Culver St")))
                 .andExpect(jsonPath("$.city", is("Culver")))
-                .andExpect(jsonPath("$.zip", is(97451)))
+                .andExpect(jsonPath("$.zip", is("97451")))
                 .andExpect(jsonPath("$.phone", is("841-874-6512")))
                 .andExpect(jsonPath("$.city", is("Culver")))
                 .andExpect(jsonPath("$.email", is("jaboyd@email.com")));
