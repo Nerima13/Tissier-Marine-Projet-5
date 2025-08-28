@@ -49,7 +49,7 @@ public class FireStationRepositoryTest {
         List<FireStation> list = fireStationRepository.findAll();
         assertEquals(oldSize - 1, list.size()); // the size has decreased
 
-        // Vérifie qu'on ne retrouve plus la caserne
+        // Check that the firestation is no longer found
         FireStation deletedFireStation = new FireStation();
         deletedFireStation.setAddress("address");
     }

@@ -64,6 +64,16 @@ public class PersonServiceImplTest {
     }
 
     @Test
+    void addToRepo_failure_throws() {
+        Person p = person("John","Boyd","1509 Culver St","Culver","97451","841-874-6512","jaboyd@email.com");
+        doThrow(new RuntimeException("Error encountered")).when(personRepository).add(any(Person.class));
+
+        assertThrows(RuntimeException.class, () -> service.add(p));
+
+        verify(personRepository).add(p);
+    }
+
+    @Test
     public void deleteToRepoTest() {
         Person p = person("John","Boyd","1509 Culver St","Culver","97451","841-874-6512", "jaboyd@email.com");
         service.delete(p);
@@ -71,9 +81,29 @@ public class PersonServiceImplTest {
     }
 
     @Test
+    void deleteToRepo_failure_throws() {
+        Person p = person("John","Boyd","1509 Culver St","Culver","97451","841-874-6512","jaboyd@email.com");
+        doThrow(new RuntimeException("Error encountered")).when(personRepository).delete(any(Person.class));
+
+        assertThrows(RuntimeException.class, () -> service.delete(p));
+
+        verify(personRepository).delete(p);
+    }
+
+    @Test
     public void updateToRepoTest() {
         Person p = person("John","Boyd","1509 Culver St","Culver","97451","841-874-6512", "jaboyd@email.com");
         service.update(p);
+        verify(personRepository).update(p);
+    }
+
+    @Test
+    void updateToRepo_failure_throws() {
+        Person p = person("John","Boyd","1509 Culver St","Culver","97451","841-874-6512","jaboyd@email.com");
+        doThrow(new RuntimeException("Error encountered")).when(personRepository).update(any(Person.class));
+
+        assertThrows(RuntimeException.class, () -> service.update(p));
+
         verify(personRepository).update(p);
     }
 
@@ -92,6 +122,16 @@ public class PersonServiceImplTest {
     }
 
     @Test
+    void getFromRepo_failure_throws() {
+        Person key = person("John","Boyd",null,null,null,null,null);
+        when(personRepository.get(any(Person.class))).thenThrow(new RuntimeException("Error encountered"));
+
+        assertThrows(RuntimeException.class, () -> service.get(key));
+
+        verify(personRepository).get(key);
+    }
+
+    @Test
     public void findAllFromRepo() {
         when(personRepository.findAll()).thenReturn(List.of(person("firstName","lastName","addr","city","zip","phone", "mail")));
         assertEquals(1, service.findAll().size());
@@ -99,14 +139,32 @@ public class PersonServiceImplTest {
     }
 
     @Test
+    void findAllFromRepo_failure_throws() {
+        when(personRepository.findAll()).thenThrow(new RuntimeException("Error encountered"));
+
+        assertThrows(RuntimeException.class, () -> service.findAll());
+
+        verify(personRepository).findAll();
+    }
+
+    @Test
     public void getAgeTest() {
         Person p = person("John","Boyd",null,null,null,null, null);
-        when(medicalRecordService.get(any(MedicalRecord.class)))
-                .thenReturn(medicalRecord("John","Boyd","03/06/1984", List.of(), List.of()));
+        when(medicalRecordService.get(any(MedicalRecord.class))).thenReturn(medicalRecord("John","Boyd","03/06/1984", List.of(), List.of()));
 
         int age = service.getAge(p);
 
         assertTrue(age >= 20);
+    }
+
+    @Test
+    void getAge_failure_whenMedicalRecordGetThrows() {
+        Person p = person("John","Boyd",null,null,null,null,null);
+        when(medicalRecordService.get(any(MedicalRecord.class))).thenThrow(new IllegalStateException("Error encountered"));
+
+        assertThrows(IllegalStateException.class, () -> service.getAge(p));
+
+        verify(medicalRecordService).get(any(MedicalRecord.class));
     }
 
     @Test

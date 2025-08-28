@@ -13,8 +13,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class FireStationServiceImplTest {
@@ -40,6 +39,16 @@ public class FireStationServiceImplTest {
     }
 
     @Test
+    public void addToRepo_failure_throws() {
+        FireStation f = fs("1509 Culver St", "3");
+        doThrow(new RuntimeException("Error encountered")).when(fireStationRepository).add(any(FireStation.class));
+
+        assertThrows(RuntimeException.class, () -> service.add(f));
+
+        verify(fireStationRepository).add(f);
+    }
+
+    @Test
     public void deleteToRepoTest() {
         FireStation f = fs("1509 Culver St", "3");
         service.delete(f);
@@ -47,9 +56,29 @@ public class FireStationServiceImplTest {
     }
 
     @Test
+    public void deleteToRepo_failure_throws() {
+        FireStation f = fs("1509 Culver St", "3");
+        doThrow(new RuntimeException("Error encountered")).when(fireStationRepository).delete(any(FireStation.class));
+
+        assertThrows(RuntimeException.class, () -> service.delete(f));
+
+        verify(fireStationRepository).delete(f);
+    }
+
+    @Test
     public void updateToRepoTest() {
         FireStation f = fs("1509 Culver St", "3");
         service.update(f);
+        verify(fireStationRepository).update(f);
+    }
+
+    @Test
+    public void updateToRepo_failure_throws() {
+        FireStation f = fs("1509 Culver St", "3");
+        doThrow(new RuntimeException("Error encountered")).when(fireStationRepository).update(any(FireStation.class));
+
+        assertThrows(RuntimeException.class, () -> service.update(f));
+
         verify(fireStationRepository).update(f);
     }
 
@@ -68,6 +97,16 @@ public class FireStationServiceImplTest {
     }
 
     @Test
+    public void getFromRepo_failure_throws() {
+        FireStation key = fs("1509 Culver St", null);
+        when(fireStationRepository.get(any(FireStation.class))).thenThrow(new RuntimeException("Error encountered"));
+
+        assertThrows(RuntimeException.class, () -> service.get(key));
+
+        verify(fireStationRepository).get(key);
+    }
+
+    @Test
     public void findAllFromRepoTest() {
         when(fireStationRepository.findAll()).thenReturn(List.of(fs("1509 Culver St", "3")));
 
@@ -77,6 +116,15 @@ public class FireStationServiceImplTest {
         assertEquals(1, all.size());
         assertEquals("1509 Culver St", all.get(0).getAddress());
         assertEquals("3", all.get(0).getStation());
+        verify(fireStationRepository).findAll();
+    }
+
+    @Test
+    public void findAllFromRepo_failure_throws() {
+        when(fireStationRepository.findAll()).thenThrow(new RuntimeException("Error encountered"));
+
+        assertThrows(RuntimeException.class, () -> service.findAll());
+
         verify(fireStationRepository).findAll();
     }
 }

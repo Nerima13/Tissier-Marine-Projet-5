@@ -11,11 +11,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class MedicalRecordServiceImplTest {
@@ -26,7 +24,6 @@ public class MedicalRecordServiceImplTest {
     @InjectMocks
     MedicalRecordServiceImpl service;
 
-    // Helper pour créer rapidement un MR
     private MedicalRecord medicalRecord(String firstName, String lastName, String birthdate, List<String> medications, List<String> allergies) {
         MedicalRecord mr = new MedicalRecord();
         mr.setFirstName(firstName);
@@ -46,9 +43,30 @@ public class MedicalRecordServiceImplTest {
     }
 
     @Test
+    public void add_failure_throws() {
+        MedicalRecord mr = medicalRecord("John","Boyd","03/06/1984",
+                List.of("aznol:350mg","hydrapermazol:100mg"), List.of("nillacilan"));
+        doThrow(new RuntimeException("Error encountered")).when(medicalRecordRepository).add(any(MedicalRecord.class));
+
+        assertThrows(RuntimeException.class, () -> service.add(mr));
+
+        verify(medicalRecordRepository).add(mr);
+    }
+
+    @Test
     public void deleteToRepoTest() {
         MedicalRecord mr = medicalRecord("John","Boyd","03/06/1984", List.of(), List.of());
         service.delete(mr);
+        verify(medicalRecordRepository).delete(mr);
+    }
+
+    @Test
+    public void delete_failure_throws() {
+        MedicalRecord mr = medicalRecord("John","Boyd","03/06/1984", List.of(), List.of());
+        doThrow(new RuntimeException("Error encountered")).when(medicalRecordRepository).delete(any(MedicalRecord.class));
+
+        assertThrows(RuntimeException.class, () -> service.delete(mr));
+
         verify(medicalRecordRepository).delete(mr);
     }
 
@@ -57,6 +75,17 @@ public class MedicalRecordServiceImplTest {
         MedicalRecord mr = medicalRecord("John","Boyd","03/06/1984",
                 List.of("aznol:350mg"), List.of());
         service.update(mr);
+        verify(medicalRecordRepository).update(mr);
+    }
+
+    @Test
+    public void update_failure_throws() {
+        MedicalRecord mr = medicalRecord("John","Boyd","03/06/1984",
+                List.of("aznol:350mg"), List.of());
+        doThrow(new RuntimeException("Error encountered")).when(medicalRecordRepository).update(any(MedicalRecord.class));
+
+        assertThrows(RuntimeException.class, () -> service.update(mr));
+
         verify(medicalRecordRepository).update(mr);
     }
 
@@ -81,6 +110,17 @@ public class MedicalRecordServiceImplTest {
     }
 
     @Test
+    public void getFromRepo_failure_throws() {
+        MedicalRecord key = medicalRecord("John","Boyd", null, null, null);
+
+        when(medicalRecordRepository.get(any(MedicalRecord.class))).thenThrow(new RuntimeException("Error encountered"));
+
+        assertThrows(RuntimeException.class, () -> service.get(key));
+
+        verify(medicalRecordRepository).get(key);
+    }
+
+    @Test
     public void findAllFromRepoTest() {
         when(medicalRecordRepository.findAll()).thenReturn(
                 List.of(medicalRecord("John","Boyd","03/06/1984", List.of(), List.of())));
@@ -89,6 +129,15 @@ public class MedicalRecordServiceImplTest {
 
         assertNotNull(all);
         assertEquals(1, all.size());
+        verify(medicalRecordRepository).findAll();
+    }
+
+    @Test
+    public void findAllFromRepo_failure_throws() {
+        when(medicalRecordRepository.findAll()).thenThrow(new RuntimeException("Error encountered"));
+
+        assertThrows(RuntimeException.class, () -> service.findAll());
+
         verify(medicalRecordRepository).findAll();
     }
 }
