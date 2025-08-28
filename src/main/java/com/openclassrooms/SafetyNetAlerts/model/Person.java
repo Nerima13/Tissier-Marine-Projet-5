@@ -23,7 +23,7 @@ public class Person {
 	private String city;
 	
 	@EqualsAndHashCode.Exclude
-	private int zip;
+	private String zip;
 	
 	@EqualsAndHashCode.Exclude
 	private String phone;
