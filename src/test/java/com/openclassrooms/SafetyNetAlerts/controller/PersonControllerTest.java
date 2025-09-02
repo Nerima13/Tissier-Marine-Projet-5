@@ -24,9 +24,9 @@ import java.util.List;
 
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -56,6 +56,19 @@ public class PersonControllerTest {
     }
 
     @Test
+    void createPerson_failure_throws() throws Exception {
+        Person p = new Person("John","Boyd","1509 Culver St","Culver","97451","841-874-6512","jaboyd@email.com");
+        doThrow(new RuntimeException("Error encountered")).when(personService).add(any(Person.class));
+
+        assertThrows(Exception.class, () ->
+                mockMvc.perform(post("/person")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(p))));
+
+        verify(personService).add(p);
+    }
+
+    @Test
     public void deletePersonTest() throws Exception {
         Person p = new Person("John","Boyd","1509 Culver St","Culver","97451","841-874-6512", "jaboyd@email.com");
 
@@ -63,6 +76,20 @@ public class PersonControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(p)))
                 .andExpect(status().isOk());
+
+        verify(personService).delete(p);
+    }
+
+    @Test
+    void deletePerson_failure_throws() throws Exception {
+        Person p = new Person("John","Boyd","1509 Culver St","Culver","97451","841-874-6512","jaboyd@email.com");
+        doThrow(new RuntimeException("Error encountered")).when(personService).delete(any(Person.class));
+
+        assertThrows(Exception.class, () ->
+                mockMvc.perform(delete("/person")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(p)))
+        );
 
         verify(personService).delete(p);
     }
@@ -80,6 +107,19 @@ public class PersonControllerTest {
     }
 
     @Test
+    void updatePerson_failure_throws() throws Exception {
+        Person p = new Person("John","Boyd","1509 Culver St","Culver","97451","841-874-6512","jaboyd@email.com");
+        doThrow(new RuntimeException("Error encountered")).when(personService).update(any(Person.class));
+
+        assertThrows(Exception.class, () ->
+                mockMvc.perform(put("/person")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(p))));
+
+        verify(personService).update(any(Person.class));
+    }
+
+    @Test
     public void getPersonTest() throws Exception {
         Person p = new Person("John","Boyd","1509 Culver St","Culver","97451","841-874-6512", "jaboyd@email.com");
 
@@ -89,6 +129,16 @@ public class PersonControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.firstName").value("John"))
                 .andExpect(jsonPath("$.lastName").value("Boyd"));
+
+        verify(personService).get(any(Person.class));
+    }
+
+    @Test
+    void getPerson_failure_throws() throws Exception {
+        when(personService.get(any(Person.class))).thenThrow(new RuntimeException("Error encountered"));
+
+        assertThrows(Exception.class, () ->
+                mockMvc.perform(get("/person?firstName=John&lastName=Boyd")));
 
         verify(personService).get(any(Person.class));
     }
@@ -109,6 +159,16 @@ public class PersonControllerTest {
                 .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(jsonPath("$[0].firstName").value("John"))
                 .andExpect(jsonPath("$[1].firstName").value("Jacob"));
+
+        verify(personService).findAll();
+    }
+
+    @Test
+    void getPersonList_failure_throws() throws Exception {
+        when(personService.findAll()).thenThrow(new RuntimeException("Error encountered"));
+
+        assertThrows(Exception.class, () ->
+                mockMvc.perform(get("/persons")));
 
         verify(personService).findAll();
     }

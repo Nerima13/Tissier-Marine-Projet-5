@@ -13,9 +13,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -47,6 +47,23 @@ public class FireStationControllerTest {
     }
 
     @Test
+    void createFireStation_failure_throws() throws Exception {
+        FireStation fs = new FireStation();
+        fs.setAddress("1509 Culver St");
+        fs.setStation("3");
+
+        doThrow(new RuntimeException("Error encountered"))
+                .when(fireStationService).add(any(FireStation.class));
+
+        assertThrows(Exception.class, () ->
+                mockMvc.perform(post("/firestation")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(fs))));
+
+        verify(fireStationService).add(fs);
+    }
+
+    @Test
     public void deleteFireStationTest() throws Exception {
         FireStation fs = new FireStation();
         fs.setAddress("1509 Culver St");
@@ -56,6 +73,23 @@ public class FireStationControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(fs)))
                 .andExpect(status().isOk());
+
+        verify(fireStationService).delete(fs);
+    }
+
+    @Test
+    void deleteFireStation_failure_throws() throws Exception {
+        FireStation fs = new FireStation();
+        fs.setAddress("1509 Culver St");
+        fs.setStation("3");
+
+        doThrow(new RuntimeException("Error encountered"))
+                .when(fireStationService).delete(any(FireStation.class));
+
+        assertThrows(Exception.class, () ->
+                mockMvc.perform(delete("/firestation")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(fs))));
 
         verify(fireStationService).delete(fs);
     }
@@ -75,6 +109,23 @@ public class FireStationControllerTest {
     }
 
     @Test
+    void updateFireStation_failure_throws() throws Exception {
+        FireStation fs = new FireStation();
+        fs.setAddress("1509 Culver St");
+        fs.setStation("3");
+
+        doThrow(new RuntimeException("Error encountered"))
+                .when(fireStationService).update(any(FireStation.class));
+
+        assertThrows(Exception.class, () ->
+                mockMvc.perform(put("/firestation")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(fs))));
+
+        verify(fireStationService).update(fs);
+    }
+
+    @Test
     public void getFireStationTest() throws Exception {
         FireStation fs = new FireStation();
         fs.setAddress("1509 Culver St");
@@ -86,6 +137,17 @@ public class FireStationControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.address").value("1509 Culver St"))
                 .andExpect(jsonPath("$.station").value("3"));
+
+        verify(fireStationService).get(any(FireStation.class));
+    }
+
+    @Test
+    void getFireStation_failure_throws() throws Exception {
+        when(fireStationService.get(any(FireStation.class)))
+                .thenThrow(new RuntimeException("Error encountered"));
+
+        assertThrows(Exception.class, () ->
+                mockMvc.perform(get("/firestation").param("address", "1509 Culver St")));
 
         verify(fireStationService).get(any(FireStation.class));
     }
@@ -108,6 +170,17 @@ public class FireStationControllerTest {
                 .andExpect(jsonPath("$[0].address").value("1509 Culver St"))
                 .andExpect(jsonPath("$[1].address").value("892 Downing Ct"))
                 .andExpect(jsonPath("$[0].station").value("3"));
+
+        verify(fireStationService).findAll();
+    }
+
+    @Test
+    void getFireStationList_failure_throws() throws Exception {
+        when(fireStationService.findAll())
+                .thenThrow(new RuntimeException("Error encountered"));
+
+        assertThrows(Exception.class, () ->
+                mockMvc.perform(get("/firestations")));
 
         verify(fireStationService).findAll();
     }
