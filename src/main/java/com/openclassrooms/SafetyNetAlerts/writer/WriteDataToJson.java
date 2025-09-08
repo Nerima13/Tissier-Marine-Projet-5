@@ -1,7 +1,6 @@
 package com.openclassrooms.SafetyNetAlerts.writer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.openclassrooms.SafetyNetAlerts.dto.DataDTO;
 import org.springframework.stereotype.Component;
 

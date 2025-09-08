@@ -6,8 +6,6 @@ import java.util.List;
 import com.openclassrooms.SafetyNetAlerts.dto.DataDTO;
 import com.openclassrooms.SafetyNetAlerts.repository.FireStationRepository;
 import com.openclassrooms.SafetyNetAlerts.repository.PersonRepository;
-import com.openclassrooms.SafetyNetAlerts.service.FireStationService;
-import com.openclassrooms.SafetyNetAlerts.service.PersonService;
 import com.openclassrooms.SafetyNetAlerts.writer.IJsonWriter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
