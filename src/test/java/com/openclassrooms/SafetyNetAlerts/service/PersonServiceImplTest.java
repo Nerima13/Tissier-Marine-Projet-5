@@ -12,8 +12,11 @@ import com.openclassrooms.SafetyNetAlerts.dto.request.personInfo.PersonInfoDTO;
 import com.openclassrooms.SafetyNetAlerts.model.FireStation;
 import com.openclassrooms.SafetyNetAlerts.model.MedicalRecord;
 import com.openclassrooms.SafetyNetAlerts.model.Person;
+import com.openclassrooms.SafetyNetAlerts.repository.FireStationRepository;
+import com.openclassrooms.SafetyNetAlerts.repository.MedicalRecordRepository;
 import com.openclassrooms.SafetyNetAlerts.repository.PersonRepository;
 import com.openclassrooms.SafetyNetAlerts.service.impl.PersonServiceImpl;
+import com.openclassrooms.SafetyNetAlerts.writer.IJsonWriter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -32,6 +35,10 @@ public class PersonServiceImplTest {
     @Mock FireStationService fireStationService;
     @Mock MedicalRecordService medicalRecordService;
     @Mock PersonRepository personRepository;
+
+    @Mock FireStationRepository fireStationRepository;
+    @Mock MedicalRecordRepository medicalRecordRepository;
+    @Mock IJsonWriter jsonWriter;
 
     @InjectMocks
     PersonServiceImpl service;
@@ -355,10 +362,8 @@ public class PersonServiceImplTest {
 
         List<String> emails = service.getEmail("Culver");
 
-        assertNotNull(emails);
+        assertTrue(emails.containsAll(List.of("jaboyd@email.com", "soph@email.com")));
         assertEquals(2, emails.size());
-        assertEquals("jaboyd@email.com", emails.get(0));
-        assertEquals("soph@email.com", emails.get(1));
 
         verify(personRepository).findAll();
     }

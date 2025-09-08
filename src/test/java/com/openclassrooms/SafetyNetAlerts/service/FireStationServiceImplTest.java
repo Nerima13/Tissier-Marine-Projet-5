@@ -2,7 +2,10 @@ package com.openclassrooms.SafetyNetAlerts.service;
 
 import com.openclassrooms.SafetyNetAlerts.model.FireStation;
 import com.openclassrooms.SafetyNetAlerts.repository.FireStationRepository;
+import com.openclassrooms.SafetyNetAlerts.repository.MedicalRecordRepository;
+import com.openclassrooms.SafetyNetAlerts.repository.PersonRepository;
 import com.openclassrooms.SafetyNetAlerts.service.impl.FireStationServiceImpl;
+import com.openclassrooms.SafetyNetAlerts.writer.IJsonWriter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -20,6 +23,10 @@ public class FireStationServiceImplTest {
 
     @Mock
     FireStationRepository fireStationRepository;
+
+    @Mock PersonRepository personRepository;
+    @Mock MedicalRecordRepository medicalRecordRepository;
+    @Mock IJsonWriter jsonWriter;
 
     @InjectMocks
     FireStationServiceImpl service;

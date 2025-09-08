@@ -1,8 +1,11 @@
 package com.openclassrooms.SafetyNetAlerts.service;
 
 import com.openclassrooms.SafetyNetAlerts.model.MedicalRecord;
+import com.openclassrooms.SafetyNetAlerts.repository.FireStationRepository;
 import com.openclassrooms.SafetyNetAlerts.repository.MedicalRecordRepository;
+import com.openclassrooms.SafetyNetAlerts.repository.PersonRepository;
 import com.openclassrooms.SafetyNetAlerts.service.impl.MedicalRecordServiceImpl;
+import com.openclassrooms.SafetyNetAlerts.writer.IJsonWriter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -18,8 +21,11 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class MedicalRecordServiceImplTest {
 
-    @Mock
-    MedicalRecordRepository medicalRecordRepository;
+    @Mock MedicalRecordRepository medicalRecordRepository;
+
+    @Mock PersonRepository personRepository;
+    @Mock FireStationRepository fireStationRepository;
+    @Mock IJsonWriter jsonWriter;
 
     @InjectMocks
     MedicalRecordServiceImpl service;
