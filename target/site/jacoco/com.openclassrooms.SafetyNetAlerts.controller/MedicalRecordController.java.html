@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MedicalRecordController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">SafetyNetAlerts</a> &gt; <a href="index.source.html" class="el_package">com.openclassrooms.SafetyNetAlerts.controller</a> &gt; <span class="el_source">MedicalRecordController.java</span></div><h1>MedicalRecordController.java</h1><pre class="source lang-java linenums">package com.openclassrooms.SafetyNetAlerts.controller;
+
+import java.util.List;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+
+import com.openclassrooms.SafetyNetAlerts.model.MedicalRecord;
+import com.openclassrooms.SafetyNetAlerts.service.impl.MedicalRecordServiceImpl;
+
+@RestController
+<span class="fc" id="L15">public class MedicalRecordController {</span>
+<span class="fc" id="L16">	private static Logger logger = LogManager.getLogger(MedicalRecordController.class);</span>
+	
+	@Autowired
+	private MedicalRecordServiceImpl medicalRecordService;
+
+	@PostMapping(&quot;/medicalRecord&quot;)
+	@ResponseStatus(code = HttpStatus.CREATED)
+	public void createMedicalRecord(@RequestBody MedicalRecord medicalRecord) {
+<span class="fc" id="L24">        logger.info(&quot;POST /medicalRecord - creating {} {}&quot;, medicalRecord.getFirstName(), medicalRecord.getLastName());</span>
+<span class="fc" id="L25">        logger.debug(&quot;Payload received (medical details omitted)&quot;);</span>
+        try {
+<span class="fc" id="L27">            medicalRecordService.add(medicalRecord);</span>
+<span class="fc" id="L28">            logger.info(&quot;POST /medicalRecord -&gt; 201 Created ({} {})&quot;,</span>
+<span class="fc" id="L29">                    medicalRecord.getFirstName(), medicalRecord.getLastName());</span>
+<span class="fc" id="L30">        } catch (Exception e) {</span>
+<span class="fc" id="L31">            logger.error(&quot;POST /medicalRecord FAILED for {} {}: {}&quot;,</span>
+<span class="fc" id="L32">                    medicalRecord.getFirstName(), medicalRecord.getLastName(), e.getMessage(), e);</span>
+<span class="fc" id="L33">            throw e;</span>
+<span class="fc" id="L34">        }</span>
+<span class="fc" id="L35">    }</span>
+	
+	@DeleteMapping(&quot;/medicalRecord&quot;)
+	@ResponseStatus(code = HttpStatus.OK)
+	public void deleteMedicalRecord(@RequestBody MedicalRecord medicalRecord) {
+<span class="fc" id="L40">        logger.info(&quot;DELETE /medicalRecord - {} {}&quot;, medicalRecord.getFirstName(), medicalRecord.getLastName());</span>
+        try {
+<span class="fc" id="L42">            medicalRecordService.delete(medicalRecord);</span>
+<span class="fc" id="L43">            logger.info(&quot;DELETE /medicalRecord -&gt; 200 OK ({} {})&quot;,</span>
+<span class="fc" id="L44">                    medicalRecord.getFirstName(), medicalRecord.getLastName());</span>
+<span class="fc" id="L45">        } catch (Exception e) {</span>
+<span class="fc" id="L46">            logger.error(&quot;DELETE /medicalRecord FAILED for {} {}: {}&quot;,</span>
+<span class="fc" id="L47">                    medicalRecord.getFirstName(), medicalRecord.getLastName(), e.getMessage(), e);</span>
+<span class="fc" id="L48">            throw e;</span>
+<span class="fc" id="L49">        }</span>
+<span class="fc" id="L50">    }</span>
+
+    @PutMapping(&quot;/medicalRecord&quot;)
+	@ResponseStatus(code = HttpStatus.OK)
+	public void updateMedicalRecord(@RequestBody MedicalRecord medicalRecord) {
+<span class="fc" id="L55">        logger.info(&quot;PUT /medicalRecord - {} {}&quot;, medicalRecord.getFirstName(), medicalRecord.getLastName());</span>
+<span class="fc" id="L56">        logger.debug(&quot;Payload received (medical details omitted)&quot;);</span>
+        try {
+<span class="fc" id="L58">            medicalRecordService.update(medicalRecord);</span>
+<span class="fc" id="L59">            logger.info(&quot;PUT /medicalRecord -&gt; 200 OK ({} {})&quot;,</span>
+<span class="fc" id="L60">                    medicalRecord.getFirstName(), medicalRecord.getLastName());</span>
+<span class="fc" id="L61">        } catch (Exception e) {</span>
+<span class="fc" id="L62">            logger.error(&quot;PUT /medicalRecord FAILED for {} {}: {}&quot;,</span>
+<span class="fc" id="L63">                    medicalRecord.getFirstName(), medicalRecord.getLastName(), e.getMessage(), e);</span>
+<span class="fc" id="L64">            throw e;</span>
+<span class="fc" id="L65">        }</span>
+<span class="fc" id="L66">    }</span>
+	
+	@GetMapping(&quot;/medicalRecord&quot;)
+	@ResponseStatus(code = HttpStatus.OK)
+	public MedicalRecord getMedicalRecord(@RequestParam(&quot;firstName&quot;) String firstName,
+										  @RequestParam(&quot;lastName&quot;) String lastName) {
+<span class="fc" id="L72">        logger.info(&quot;GET /medicalRecord firstName='{}' lastName='{}'&quot;, firstName, lastName);</span>
+        try {
+<span class="fc" id="L74">            MedicalRecord key = new MedicalRecord(firstName, lastName);</span>
+<span class="fc" id="L75">            MedicalRecord medicalRecord = medicalRecordService.get(key);</span>
+<span class="pc bpc" id="L76" title="1 of 2 branches missed.">            if (medicalRecord == null) {</span>
+<span class="nc" id="L77">                logger.info(&quot;GET /medicalRecord -&gt; 200 OK, result=empty ({} {})&quot;, firstName, lastName);</span>
+            } else {
+<span class="fc" id="L79">                logger.info(&quot;GET /medicalRecord -&gt; 200 OK (found=true)&quot;);</span>
+<span class="fc" id="L80">                logger.debug(&quot;Record loaded for {} {} (medical details omitted)&quot;, firstName, lastName);</span>
+            }
+<span class="fc" id="L82">            return medicalRecord;</span>
+<span class="fc" id="L83">        } catch (Exception e) {</span>
+<span class="fc" id="L84">            logger.error(&quot;GET /medicalRecord FAILED for {} {}: {}&quot;, firstName, lastName, e.getMessage(), e);</span>
+<span class="fc" id="L85">            throw e;</span>
+        }
+    }
+	
+	@GetMapping(&quot;/medicalRecords&quot;)
+    public List&lt;MedicalRecord&gt; getMedicalRecordList() {
+<span class="fc" id="L91">        logger.info(&quot;GET /medicalRecords&quot;);</span>
+        try {
+<span class="fc" id="L93">            List&lt;MedicalRecord&gt; medicalRecordList = medicalRecordService.findAll();</span>
+<span class="fc" id="L94">            logger.info(&quot;GET /medicalRecords -&gt; 200 OK, count={}&quot;, medicalRecordList.size());</span>
+<span class="fc" id="L95">            logger.debug(&quot;First results (details omitted): {}&quot;,</span>
+<span class="fc" id="L96">                    medicalRecordList.stream().limit(3).map(m -&gt; m.getFirstName() + &quot; &quot; + m.getLastName()).toList());</span>
+<span class="fc" id="L97">            return medicalRecordList;</span>
+<span class="fc" id="L98">        } catch (Exception e) {</span>
+<span class="fc" id="L99">            logger.error(&quot;GET /medicalRecords FAILED: {}&quot;, e.getMessage(), e);</span>
+<span class="fc" id="L100">            throw e;</span>
+        }
+    }
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

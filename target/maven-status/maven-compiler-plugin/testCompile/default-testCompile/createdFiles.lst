@@ -1,0 +1,11 @@
+com\openclassrooms\SafetyNetAlerts\service\FireStationServiceImplTest.class
+com\openclassrooms\SafetyNetAlerts\SafetyNetAlertsApplicationTests.class
+com\openclassrooms\SafetyNetAlerts\controller\FireStationControllerTest.class
+com\openclassrooms\SafetyNetAlerts\controller\PersonControllerTest.class
+com\openclassrooms\SafetyNetAlerts\repository\FireStationRepositoryImplTest.class
+com\openclassrooms\SafetyNetAlerts\service\PersonServiceImplTest.class
+com\openclassrooms\SafetyNetAlerts\controller\MedicalRecordControllerTest.class
+com\openclassrooms\SafetyNetAlerts\integrationtests\ApiIntegrationTest.class
+com\openclassrooms\SafetyNetAlerts\repository\MedicalRecordRepositoryImplTest.class
+com\openclassrooms\SafetyNetAlerts\repository\PersonRepositoryImplTest.class
+com\openclassrooms\SafetyNetAlerts\service\MedicalRecordServiceImplTest.class

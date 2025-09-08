@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PersonController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">SafetyNetAlerts</a> &gt; <a href="index.source.html" class="el_package">com.openclassrooms.SafetyNetAlerts.controller</a> &gt; <span class="el_source">PersonController.java</span></div><h1>PersonController.java</h1><pre class="source lang-java linenums">package com.openclassrooms.SafetyNetAlerts.controller;
+
+import java.util.List;
+
+import com.openclassrooms.SafetyNetAlerts.dto.request.childAlert.ChildDTO;
+import com.openclassrooms.SafetyNetAlerts.dto.request.fireAlert.FireAlertAddressDTO;
+import com.openclassrooms.SafetyNetAlerts.dto.request.firestationNumber.FireStationCoverageDTO;
+import com.openclassrooms.SafetyNetAlerts.dto.request.floodAlert.FloodAlertDTO;
+import com.openclassrooms.SafetyNetAlerts.dto.request.personInfo.PersonInfoDTO;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+
+import com.openclassrooms.SafetyNetAlerts.model.Person;
+import com.openclassrooms.SafetyNetAlerts.service.impl.PersonServiceImpl;
+
+@RestController
+<span class="fc" id="L20">public class PersonController {</span>
+<span class="fc" id="L21">	private static Logger logger = LogManager.getLogger(PersonController.class);</span>
+	
+	@Autowired
+	private PersonServiceImpl personService;
+	
+	
+	@PostMapping(&quot;/person&quot;)
+	@ResponseStatus(code = HttpStatus.CREATED)
+	public void createPerson(@RequestBody Person person) {
+<span class="fc" id="L30">        logger.info(&quot;POST /person - creating {} {}&quot;, person.getFirstName(), person.getLastName());</span>
+<span class="fc" id="L31">        logger.debug(&quot;Payload : {}&quot;, person);</span>
+        try {
+<span class="fc" id="L33">            personService.add(person);</span>
+<span class="fc" id="L34">            logger.info(&quot;POST /person -&gt; 201 Created&quot;);</span>
+<span class="fc" id="L35">        } catch (Exception e) {</span>
+<span class="fc" id="L36">            logger.error(&quot;POST /person FAILED for {} {}: {}&quot;, person.getFirstName(), person.getLastName(), e.getMessage(), e);</span>
+<span class="fc" id="L37">            throw e;</span>
+<span class="fc" id="L38">        }</span>
+<span class="fc" id="L39">    }</span>
+	
+	@DeleteMapping(&quot;/person&quot;)
+	@ResponseStatus(code = HttpStatus.OK)
+	public void deletePerson(@RequestBody Person person) {
+<span class="fc" id="L44">        logger.info(&quot;DELETE /person - {} {}&quot;, person.getFirstName(), person.getLastName());</span>
+        try {
+<span class="fc" id="L46">            personService.delete(person);</span>
+<span class="fc" id="L47">            logger.info(&quot;DELETE /person -&gt; 200 OK&quot;);</span>
+<span class="fc" id="L48">        } catch (Exception e) {</span>
+<span class="fc" id="L49">            logger.error(&quot;DELETE /person FAILED for {} {}: {}&quot;, person.getFirstName(), person.getLastName(), e.getMessage(), e);</span>
+<span class="fc" id="L50">            throw e;</span>
+<span class="fc" id="L51">        }</span>
+<span class="fc" id="L52">	}</span>
+	
+	@PutMapping(&quot;/person&quot;)
+	@ResponseStatus(code = HttpStatus.OK)
+	public void updatePerson(@RequestBody Person person) {
+<span class="fc" id="L57">        logger.info(&quot;PUT /person - {} {}&quot;,</span>
+<span class="fc" id="L58">                person.getFirstName(), person.getLastName());</span>
+<span class="fc" id="L59">        logger.debug(&quot;Payload : {}&quot;, person);</span>
+        try {
+<span class="fc" id="L61">            personService.update(person);</span>
+<span class="fc" id="L62">            logger.info(&quot;PUT /person -&gt; 200 OK&quot;);</span>
+<span class="fc" id="L63">        } catch (Exception e) {</span>
+<span class="fc" id="L64">            logger.error(&quot;PUT /person FAILED for {} {}: {}&quot;,</span>
+<span class="fc" id="L65">                    person.getFirstName(), person.getLastName(), e.getMessage(), e);</span>
+<span class="fc" id="L66">            throw e;</span>
+<span class="fc" id="L67">        }</span>
+<span class="fc" id="L68">	}</span>
+
+	@GetMapping(&quot;/person&quot;)
+	@ResponseStatus(code = HttpStatus.OK)
+	public Person getPerson(@RequestParam(&quot;firstName&quot;) String firstName,
+							@RequestParam(&quot;lastName&quot;) String lastName) {
+<span class="fc" id="L74">        logger.info(&quot;GET /person firstName='{}' lastName='{}'&quot;, firstName, lastName);</span>
+<span class="fc" id="L75">        Person p = personService.get(new Person(firstName, lastName));</span>
+<span class="pc bpc" id="L76" title="1 of 2 branches missed.">        if (p == null) {</span>
+<span class="nc" id="L77">            logger.info(&quot;GET /person -&gt; 200 OK, result=empty ({} {})&quot;, firstName, lastName);</span>
+        } else {
+<span class="fc" id="L79">            logger.info(&quot;GET /person -&gt; 200 OK&quot;);</span>
+<span class="fc" id="L80">            logger.debug(&quot;Result person: {}&quot;, p);</span>
+        }
+<span class="fc" id="L82">        return p;</span>
+    }
+	
+	@GetMapping(&quot;/persons&quot;)
+    public List&lt;Person&gt; getPersonList() {
+<span class="fc" id="L87">        logger.info(&quot;GET /persons&quot;);</span>
+<span class="fc" id="L88">        List&lt;Person&gt; list = personService.findAll();</span>
+<span class="fc" id="L89">        logger.info(&quot;GET /persons -&gt; 200 OK, count={}&quot;, list.size());</span>
+<span class="fc" id="L90">        logger.debug(&quot;First results: {}&quot;,</span>
+<span class="fc" id="L91">                list.stream().limit(3).toList());</span>
+<span class="fc" id="L92">        return list;</span>
+    }
+
+    @GetMapping(&quot;/firestationNumber&quot;)
+    public FireStationCoverageDTO getPersonsCoveredByStation(@RequestParam(&quot;stationNumber&quot;) String station) {
+<span class="fc" id="L97">        logger.info(&quot;GET /firestation stationNumber={}&quot;, station);</span>
+        try {
+<span class="fc" id="L99">            FireStationCoverageDTO dto = personService.getPersonsCoveredByStation(station);</span>
+<span class="fc" id="L100">            logger.info(&quot;GET /firestation -&gt; 200 OK, residents={}, adults={}, children={}&quot;,</span>
+<span class="fc" id="L101">                    dto.getInfoPerson().size(), dto.getNbAdult(), dto.getNbChild());</span>
+<span class="fc" id="L102">            logger.debug(&quot;Sample phones: {}&quot;,</span>
+<span class="fc" id="L103">                    dto.getInfoPerson().stream().map(p -&gt; p.getPhone()).limit(3).toList());</span>
+<span class="fc" id="L104">            return dto;</span>
+<span class="nc" id="L105">        } catch (Exception e) {</span>
+<span class="nc" id="L106">            logger.error(&quot;GET /firestationNumber FAILED for station {}: {}&quot;, station, e.getMessage(), e);</span>
+<span class="nc" id="L107">            throw e;</span>
+        }
+    }
+
+    @GetMapping(&quot;/childAlert&quot;)
+    public List&lt;ChildDTO&gt; getChildInfos(@RequestParam(&quot;address&quot;) String address) {
+<span class="fc" id="L113">        logger.info(&quot;GET /childAlert?address={}&quot;, address);</span>
+        try {
+<span class="fc" id="L115">            List&lt;ChildDTO&gt; children = personService.getChildInfos(address);</span>
+<span class="fc" id="L116">            logger.info(&quot;GET /childAlert -&gt; 200 OK, children={}&quot;, children.size());</span>
+<span class="fc" id="L117">            logger.debug(&quot;Children detail sample: {}&quot;, children.stream().limit(2).toList());</span>
+<span class="fc" id="L118">            return children;</span>
+<span class="nc" id="L119">        } catch (Exception e) {</span>
+<span class="nc" id="L120">            logger.error(&quot;GET /childAlert FAILED for address {}: {}&quot;, address, e.getMessage(), e);</span>
+<span class="nc" id="L121">            throw e;</span>
+        }
+    }
+
+    @GetMapping(&quot;/phoneAlert&quot;)
+    public List&lt;String&gt; getPhoneByFireStation(@RequestParam(&quot;firestation&quot;) String fireStationNumber) {
+<span class="fc" id="L127">        logger.info(&quot;GET /phoneAlert?firestation={}&quot;, fireStationNumber);</span>
+        try {
+<span class="fc" id="L129">            List&lt;String&gt; phones = personService.getPhoneByFireStation(fireStationNumber);</span>
+<span class="fc" id="L130">            logger.info(&quot;GET /phoneAlert -&gt; 200 OK, phones={}&quot;, phones.size());</span>
+<span class="fc" id="L131">            logger.debug(&quot;Sample phones: {}&quot;, phones.stream().limit(3).toList());</span>
+<span class="fc" id="L132">            return phones;</span>
+<span class="nc" id="L133">        } catch (Exception e) {</span>
+<span class="nc" id="L134">            logger.error(&quot;GET /phoneAlert FAILED for station {}: {}&quot;, fireStationNumber, e.getMessage(), e);</span>
+<span class="nc" id="L135">            throw e;</span>
+        }
+    }
+
+    @GetMapping(&quot;/fire&quot;)
+    public FireAlertAddressDTO getFireAlert(@RequestParam(&quot;address&quot;) String address) {
+<span class="fc" id="L141">        logger.info(&quot;GET /fire?address={}&quot;, address);</span>
+        try {
+<span class="fc" id="L143">            FireAlertAddressDTO dto = personService.getFireAlert(address);</span>
+<span class="pc bpc" id="L144" title="1 of 2 branches missed.">            if (dto == null) {</span>
+<span class="nc" id="L145">                logger.info(&quot;GET /fire -&gt; 200 OK, result=empty (address={})&quot;, address);</span>
+            } else {
+<span class="fc" id="L147">                logger.info(&quot;GET /fire -&gt; 200 OK, residents={}&quot;, dto.getResidents().size());</span>
+<span class="fc" id="L148">                logger.debug(&quot;Resident sample: {}&quot;, dto.getResidents().stream().limit(2).toList());</span>
+            }
+<span class="fc" id="L150">            return dto;</span>
+<span class="nc" id="L151">        } catch (Exception e) {</span>
+<span class="nc" id="L152">            logger.error(&quot;GET /fire FAILED for address {}: {}&quot;, address, e.getMessage(), e);</span>
+<span class="nc" id="L153">            throw e;</span>
+        }
+    }
+
+    @GetMapping(&quot;/flood/stations&quot;)
+    public FloodAlertDTO getFloodAlert(@RequestParam(&quot;stations&quot;) List&lt;String&gt; stations) {
+<span class="fc" id="L159">        logger.info(&quot;GET /flood/stations?stations={}&quot;, stations);</span>
+        try {
+<span class="fc" id="L161">            FloodAlertDTO dto = personService.getFloodAlert(stations);</span>
+<span class="fc" id="L162">            logger.info(&quot;GET /flood/stations -&gt; 200 OK, households={}&quot;, dto.getAddressList().size());</span>
+<span class="fc" id="L163">            logger.debug(&quot;First households: {}&quot;, dto.getAddressList().stream().limit(2).toList());</span>
+<span class="fc" id="L164">            return dto;</span>
+<span class="nc" id="L165">        } catch (Exception e) {</span>
+<span class="nc" id="L166">            logger.error(&quot;GET /flood/stations FAILED for stations {}: {}&quot;, stations, e.getMessage(), e);</span>
+<span class="nc" id="L167">            throw e;</span>
+        }
+    }
+
+    @GetMapping(&quot;/personInfolastName&quot;)
+    public List&lt;PersonInfoDTO&gt; getPersonInfo(@RequestParam(&quot;lastName&quot;) String lastName) {
+<span class="fc" id="L173">        logger.info(&quot;GET /personInfolastName?lastName={}&quot;, lastName);</span>
+        try {
+<span class="fc" id="L175">            List&lt;PersonInfoDTO&gt; info = personService.getPersonInfo(lastName);</span>
+<span class="fc" id="L176">            logger.info(&quot;GET /personInfolastName -&gt; 200 OK, results={}&quot;, info.size());</span>
+<span class="fc" id="L177">            logger.debug(&quot;Sample info: {}&quot;, info.stream().limit(2).toList());</span>
+<span class="fc" id="L178">            return info;</span>
+<span class="nc" id="L179">        } catch (Exception e) {</span>
+<span class="nc" id="L180">            logger.error(&quot;GET /personInfolastName FAILED for lastName {}: {}&quot;, lastName, e.getMessage(), e);</span>
+<span class="nc" id="L181">            throw e;</span>
+        }
+    }
+
+    @GetMapping(&quot;/communityEmail&quot;)
+    public List&lt;String&gt; getEmail(@RequestParam(&quot;city&quot;) String city) {
+<span class="fc" id="L187">        logger.info(&quot;GET /communityEmail?city={}&quot;, city);</span>
+        try {
+<span class="fc" id="L189">            List&lt;String&gt; emails = personService.getEmail(city);</span>
+<span class="fc" id="L190">            logger.info(&quot;GET /communityEmail -&gt; 200 OK, emails={}&quot;, emails.size());</span>
+<span class="fc" id="L191">            logger.debug(&quot;Sample emails: {}&quot;, emails.stream().limit(3).toList());</span>
+<span class="fc" id="L192">            return emails;</span>
+<span class="nc" id="L193">        } catch (Exception e) {</span>
+<span class="nc" id="L194">            logger.error(&quot;GET /communityEmail FAILED for city {}: {}&quot;, city, e.getMessage(), e);</span>
+<span class="nc" id="L195">            throw e;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

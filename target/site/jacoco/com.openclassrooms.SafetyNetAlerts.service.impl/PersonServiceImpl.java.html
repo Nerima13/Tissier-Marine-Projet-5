@@ -1,0 +1,681 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PersonServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">SafetyNetAlerts</a> &gt; <a href="index.source.html" class="el_package">com.openclassrooms.SafetyNetAlerts.service.impl</a> &gt; <span class="el_source">PersonServiceImpl.java</span></div><h1>PersonServiceImpl.java</h1><pre class="source lang-java linenums">package com.openclassrooms.SafetyNetAlerts.service.impl;
+
+import java.io.IOException;
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import com.openclassrooms.SafetyNetAlerts.dto.DataDTO;
+import com.openclassrooms.SafetyNetAlerts.dto.request.childAlert.ChildDTO;
+import com.openclassrooms.SafetyNetAlerts.dto.request.childAlert.FamilyMemberDTO;
+import com.openclassrooms.SafetyNetAlerts.dto.request.fireAlert.FireAlertAddressDTO;
+import com.openclassrooms.SafetyNetAlerts.dto.request.fireAlert.FireAlertPersonDTO;
+import com.openclassrooms.SafetyNetAlerts.dto.request.firestationNumber.FireStationCoverageDTO;
+import com.openclassrooms.SafetyNetAlerts.dto.request.firestationNumber.PersonByStationNumberDTO;
+import com.openclassrooms.SafetyNetAlerts.dto.request.floodAlert.FloodAlertAddressDTO;
+import com.openclassrooms.SafetyNetAlerts.dto.request.floodAlert.FloodAlertDTO;
+import com.openclassrooms.SafetyNetAlerts.dto.request.floodAlert.FloodAlertPersonDTO;
+import com.openclassrooms.SafetyNetAlerts.dto.request.personInfo.PersonInfoDTO;
+import com.openclassrooms.SafetyNetAlerts.model.FireStation;
+import com.openclassrooms.SafetyNetAlerts.model.MedicalRecord;
+import com.openclassrooms.SafetyNetAlerts.service.FireStationService;
+import com.openclassrooms.SafetyNetAlerts.service.MedicalRecordService;
+import com.openclassrooms.SafetyNetAlerts.writer.IJsonWriter;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+
+import com.openclassrooms.SafetyNetAlerts.model.Person;
+import com.openclassrooms.SafetyNetAlerts.repository.PersonRepository;
+import com.openclassrooms.SafetyNetAlerts.service.PersonService;
+
+@Service
+<span class="fc" id="L39">public class PersonServiceImpl implements PersonService {</span>
+
+<span class="fc" id="L41">    private static final Logger logger = LogManager.getLogger(PersonServiceImpl.class);</span>
+
+    @Autowired
+    FireStationService fireStationService;
+    @Autowired
+    MedicalRecordService medicalRecordService;
+
+    @Autowired
+    @Qualifier(&quot;personRepoSingleton&quot;)
+    private PersonRepository personRepository;
+
+    @Autowired
+    private IJsonWriter jsonWriter;
+
+    @Override
+    public void add(Person person) {
+<span class="fc" id="L57">        logger.info(&quot;Add person {} {}&quot;, person.getFirstName(), person.getLastName());</span>
+<span class="fc" id="L58">        logger.debug(&quot;Add payload: {}&quot;, person);</span>
+        try {
+<span class="fc" id="L60">            personRepository.add(person);</span>
+<span class="fc" id="L61">            logger.info(&quot;Person added successfully: {} {}&quot;, person.getFirstName(), person.getLastName());</span>
+
+<span class="fc" id="L63">            DataDTO dto = new DataDTO(</span>
+<span class="fc" id="L64">                    personRepository.findAll(),</span>
+<span class="fc" id="L65">                    fireStationService.findAll(),</span>
+<span class="fc" id="L66">                    medicalRecordService.findAll());</span>
+<span class="fc" id="L67">            jsonWriter.writeJsonFile(dto);</span>
+
+<span class="nc" id="L69">        } catch (IOException e) {</span>
+<span class="nc" id="L70">            logger.error(&quot;Failed to write data.json after add: {}&quot;, e.getMessage(), e);</span>
+<span class="nc" id="L71">            throw new RuntimeException(&quot;Unable to write data.json&quot;, e);</span>
+<span class="fc" id="L72">        } catch (Exception e) {</span>
+<span class="fc" id="L73">            logger.error(&quot;Add person FAILED for {} {}: {}&quot;, person.getFirstName(), person.getLastName(), e.getMessage(), e);</span>
+<span class="fc" id="L74">            throw e;</span>
+<span class="fc" id="L75">        }</span>
+<span class="fc" id="L76">    }</span>
+
+    @Override
+    public void delete(Person person) {
+<span class="fc" id="L80">        logger.info(&quot;Delete person {} {}&quot;, person.getFirstName(), person.getLastName());</span>
+        try {
+<span class="fc" id="L82">            personRepository.delete(person);</span>
+<span class="fc" id="L83">            logger.info(&quot;Person deleted successfully: {} {}&quot;, person.getFirstName(), person.getLastName());</span>
+<span class="fc" id="L84">            DataDTO dto = new DataDTO(</span>
+<span class="fc" id="L85">                    personRepository.findAll(),</span>
+<span class="fc" id="L86">                    fireStationService.findAll(),</span>
+<span class="fc" id="L87">                    medicalRecordService.findAll());</span>
+<span class="fc" id="L88">            jsonWriter.writeJsonFile(dto);</span>
+
+<span class="nc" id="L90">        } catch (IOException e) {</span>
+<span class="nc" id="L91">            logger.error(&quot;Failed to write data.json after delete: {}&quot;, e.getMessage(), e);</span>
+<span class="nc" id="L92">            throw new RuntimeException(&quot;Unable to write data.json&quot;, e);</span>
+<span class="fc" id="L93">        } catch (Exception e) {</span>
+<span class="fc" id="L94">            logger.error(&quot;Delete person FAILED for {} {}: {}&quot;, person.getFirstName(), person.getLastName(), e.getMessage(), e);</span>
+<span class="fc" id="L95">            throw e;</span>
+<span class="fc" id="L96">        }</span>
+<span class="fc" id="L97">    }</span>
+
+    @Override
+    public void update(Person person) {
+<span class="fc" id="L101">        logger.info(&quot;Update person {} {}&quot;, person.getFirstName(), person.getLastName());</span>
+<span class="fc" id="L102">        logger.debug(&quot;Update payload: {}&quot;, person);</span>
+        try {
+<span class="fc" id="L104">            personRepository.update(person);</span>
+<span class="fc" id="L105">            logger.info(&quot;Person updated successfully: {} {}&quot;, person.getFirstName(), person.getLastName());</span>
+
+<span class="fc" id="L107">            DataDTO dto = new DataDTO(</span>
+<span class="fc" id="L108">                    personRepository.findAll(),</span>
+<span class="fc" id="L109">                    fireStationService.findAll(),</span>
+<span class="fc" id="L110">                    medicalRecordService.findAll());</span>
+<span class="fc" id="L111">            jsonWriter.writeJsonFile(dto);</span>
+
+<span class="nc" id="L113">        } catch (IOException e) {</span>
+<span class="nc" id="L114">            logger.error(&quot;Failed to write data.json after update: {}&quot;, e.getMessage(), e);</span>
+<span class="nc" id="L115">            throw new RuntimeException(&quot;Unable to write data.json&quot;, e);</span>
+<span class="fc" id="L116">        } catch (Exception e) {</span>
+<span class="fc" id="L117">            logger.error(&quot;Update person FAILED for {} {}: {}&quot;, person.getFirstName(), person.getLastName(), e.getMessage(), e);</span>
+<span class="fc" id="L118">            throw e;</span>
+<span class="fc" id="L119">        }</span>
+<span class="fc" id="L120">    }</span>
+
+    @Override
+    public Person get(Person person) {
+<span class="fc" id="L124">        logger.debug(&quot;Get person {} {}&quot;, person.getFirstName(), person.getLastName());</span>
+        try {
+<span class="fc" id="L126">            Person result = personRepository.get(person);</span>
+<span class="pc bpc" id="L127" title="1 of 2 branches missed.">            if (result == null) {</span>
+<span class="nc" id="L128">                logger.info(&quot;Get person -&gt; result=empty ({} {})&quot;, person.getFirstName(), person.getLastName());</span>
+            } else {
+<span class="fc" id="L130">                logger.info(&quot;Get person -&gt; found ({} {})&quot;, person.getFirstName(), person.getLastName());</span>
+<span class="fc" id="L131">                logger.debug(&quot;Get person -&gt; {}&quot;, result);</span>
+            }
+<span class="fc" id="L133">            return result;</span>
+<span class="fc" id="L134">        } catch (Exception e) {</span>
+<span class="fc" id="L135">            logger.error(&quot;Get person FAILED for {} {}: {}&quot;, person.getFirstName(), person.getLastName(), e.getMessage(), e);</span>
+<span class="fc" id="L136">            throw e;</span>
+        }
+    }
+
+    @Override
+    public List&lt;Person&gt; findAll() {
+<span class="fc" id="L142">        logger.info(&quot;FindAll persons&quot;);</span>
+        try {
+<span class="fc" id="L144">            List&lt;Person&gt; list = personRepository.findAll();</span>
+<span class="fc" id="L145">            logger.info(&quot;FindAll -&gt; count={}&quot;, list.size());</span>
+<span class="fc" id="L146">            logger.debug(&quot;FindAll sample: {}&quot;, list.stream().limit(3).toList());</span>
+<span class="fc" id="L147">            return list;</span>
+<span class="fc" id="L148">        } catch (Exception e) {</span>
+<span class="fc" id="L149">            logger.error(&quot;findAll persons FAILED: {}&quot;, e.getMessage(), e);</span>
+<span class="fc" id="L150">            throw e;</span>
+        }
+    }
+
+    public int getAge(Person person) {
+<span class="fc" id="L155">        logger.debug(&quot;Compute age for {} {}&quot;, person.getFirstName(), person.getLastName());</span>
+        try {
+<span class="fc" id="L157">            MedicalRecord medicalRecord = new MedicalRecord(person.getFirstName(), person.getLastName());</span>
+<span class="fc" id="L158">            String birthdateAsString = medicalRecordService.get(medicalRecord).getBirthdate();</span>
+<span class="fc" id="L159">            LocalDate birthdate = LocalDate.parse(birthdateAsString, DateTimeFormatter.ofPattern(&quot;MM/dd/yyyy&quot;));</span>
+<span class="fc" id="L160">            int years = Period.between(birthdate, LocalDate.now()).getYears();</span>
+<span class="fc" id="L161">            logger.debug(&quot;Computed age for {} {} -&gt; {}&quot;, person.getFirstName(), person.getLastName(), years);</span>
+<span class="fc" id="L162">            return years;</span>
+<span class="fc" id="L163">        } catch (Exception e) {</span>
+<span class="fc" id="L164">            logger.error(&quot;Compute age FAILED for {} {}: {}&quot;, person.getFirstName(), person.getLastName(), e.getMessage(), e);</span>
+<span class="fc" id="L165">            throw e;</span>
+        }
+    }
+
+    @Override
+    public FireStationCoverageDTO getPersonsCoveredByStation(String stationNumber) {
+<span class="fc" id="L171">        logger.info(&quot;Coverage by station stationNumber={}&quot;, stationNumber);</span>
+<span class="fc" id="L172">        FireStationCoverageDTO result = new FireStationCoverageDTO();</span>
+
+        try {
+<span class="pc bpc" id="L175" title="1 of 2 branches missed.">            if (stationNumber == null) {</span>
+<span class="nc" id="L176">                logger.info(&quot;Coverage by station -&gt; stationNumber=null -&gt; empty result&quot;);</span>
+<span class="nc" id="L177">                return result;</span>
+            }
+
+<span class="fc" id="L180">            List&lt;PersonByStationNumberDTO&gt; coveredPersons = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L181">            int nbAdult = 0;</span>
+<span class="fc" id="L182">            int nbChild = 0;</span>
+
+            // 1) Addresses of firestations covered by the station
+<span class="fc" id="L185">            List&lt;String&gt; coveredAddresses = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L186">            List&lt;FireStation&gt; fireStations = fireStationService.findAll();</span>
+<span class="fc" id="L187">            logger.debug(&quot;Found {} fireStation mappings&quot;, fireStations.size());</span>
+
+<span class="fc bfc" id="L189" title="All 2 branches covered.">            for (FireStation f : fireStations) {</span>
+<span class="pc bpc" id="L190" title="2 of 6 branches missed.">                if (f != null &amp;&amp; f.getStation() != null &amp;&amp; f.getStation().equals(stationNumber)) {</span>
+<span class="fc" id="L191">                    coveredAddresses.add(f.getAddress());</span>
+                }
+<span class="fc" id="L193">            }</span>
+<span class="fc" id="L194">            logger.debug(&quot;Station {} covers {} addresses&quot;, stationNumber, coveredAddresses.size());</span>
+
+            // 2) Browse all people
+<span class="fc" id="L197">            List&lt;Person&gt; persons = personRepository.findAll();</span>
+<span class="fc" id="L198">            logger.debug(&quot;Total persons in repository: {}&quot;, persons.size());</span>
+
+<span class="fc bfc" id="L200" title="All 2 branches covered.">            for (Person p : persons) {</span>
+<span class="pc bpc" id="L201" title="2 of 4 branches missed.">                if (p == null || p.getAddress() == null) continue;</span>
+
+                // Check that their addresses are covered
+<span class="fc" id="L204">                boolean isCovered = false;</span>
+<span class="fc bfc" id="L205" title="All 2 branches covered.">                for (String addr : coveredAddresses) {</span>
+<span class="pc bpc" id="L206" title="1 of 4 branches missed.">                    if (addr != null &amp;&amp; addr.equals(p.getAddress())) {</span>
+<span class="fc" id="L207">                        isCovered = true;</span>
+<span class="fc" id="L208">                        break;</span>
+                    }
+<span class="fc" id="L210">                }</span>
+<span class="fc bfc" id="L211" title="All 2 branches covered.">                if (!isCovered) continue;</span>
+
+                // 3) Build the DTO
+<span class="fc" id="L214">                PersonByStationNumberDTO dto = new PersonByStationNumberDTO();</span>
+<span class="fc" id="L215">                dto.setFirstName(p.getFirstName());</span>
+<span class="fc" id="L216">                dto.setLastName(p.getLastName());</span>
+<span class="fc" id="L217">                dto.setAddress(p.getAddress());</span>
+<span class="fc" id="L218">                dto.setPhone(p.getPhone());</span>
+
+                // Avoid duplicate people
+<span class="fc" id="L221">                boolean alreadyInList = false;</span>
+<span class="fc bfc" id="L222" title="All 2 branches covered.">                for (PersonByStationNumberDTO person : coveredPersons) {</span>
+<span class="pc bpc" id="L223" title="1 of 2 branches missed.">                    boolean sameFirstName = p.getFirstName() != null</span>
+<span class="pc bpc" id="L224" title="1 of 2 branches missed.">                            &amp;&amp; p.getFirstName().equals(person.getFirstName());</span>
+<span class="pc bpc" id="L225" title="1 of 2 branches missed.">                    boolean sameLastName = p.getLastName() != null</span>
+<span class="fc bfc" id="L226" title="All 2 branches covered.">                            &amp;&amp; p.getLastName().equals(person.getLastName());</span>
+<span class="pc bpc" id="L227" title="1 of 2 branches missed.">                    boolean sameAddress = p.getAddress() != null</span>
+<span class="fc bfc" id="L228" title="All 2 branches covered.">                            &amp;&amp; p.getAddress().equals(person.getAddress());</span>
+
+<span class="pc bpc" id="L230" title="5 of 6 branches missed.">                    if (sameFirstName &amp;&amp; sameLastName &amp;&amp; sameAddress) {</span>
+<span class="nc" id="L231">                        alreadyInList = true;</span>
+<span class="nc" id="L232">                        break;</span>
+                    }
+<span class="fc" id="L234">                }</span>
+<span class="pc bpc" id="L235" title="1 of 2 branches missed.">                if (!alreadyInList) {</span>
+<span class="fc" id="L236">                    coveredPersons.add(dto);</span>
+
+                    // 4) Count children (≤18) and adults
+<span class="fc" id="L239">                    int age = getAge(p);</span>
+<span class="fc bfc" id="L240" title="All 2 branches covered.">                    if (age &lt;= 18) {</span>
+<span class="fc" id="L241">                        nbChild++;</span>
+                    } else {
+<span class="fc" id="L243">                        nbAdult++;</span>
+                    }
+                }
+<span class="fc" id="L246">            }</span>
+
+<span class="fc" id="L248">            result.setStation(stationNumber);</span>
+<span class="fc" id="L249">            result.setInfoPerson(coveredPersons);</span>
+<span class="fc" id="L250">            result.setNbAdult(nbAdult);</span>
+<span class="fc" id="L251">            result.setNbChild(nbChild);</span>
+
+<span class="fc" id="L253">            logger.info(&quot;Coverage station={} -&gt; residents={}, adults={}, children={}&quot;,</span>
+<span class="fc" id="L254">                    stationNumber, coveredPersons.size(), nbAdult, nbChild);</span>
+<span class="fc" id="L255">            logger.debug(&quot;Coverage sample phones: {}&quot;,</span>
+<span class="fc" id="L256">                    coveredPersons.stream().map(PersonByStationNumberDTO::getPhone).limit(3).toList());</span>
+<span class="fc" id="L257">            return result;</span>
+
+<span class="nc" id="L259">        } catch (Exception e) {</span>
+<span class="nc" id="L260">            logger.error(&quot;Coverage by station FAILED for station {}: {}&quot;, stationNumber, e.getMessage(), e);</span>
+<span class="nc" id="L261">            throw e;</span>
+        }
+    }
+
+    @Override
+    public List&lt;ChildDTO&gt; getChildInfos(String address) {
+<span class="fc" id="L267">        logger.info(&quot;ChildAlert for address='{}'&quot;, address);</span>
+<span class="fc" id="L268">        List&lt;ChildDTO&gt; result = new ArrayList&lt;&gt;();</span>
+
+        try {
+<span class="pc bpc" id="L271" title="1 of 2 branches missed.">            if (address == null) {</span>
+<span class="nc" id="L272">                logger.info(&quot;childAlert -&gt; address=null -&gt; empty result&quot;);</span>
+<span class="nc" id="L273">                return result;</span>
+            }
+
+            // 1) List the people living at this address
+<span class="fc" id="L277">            List&lt;Person&gt; personsAtAddress = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L278">            List&lt;Person&gt; persons = personRepository.findAll();</span>
+<span class="fc" id="L279">            logger.debug(&quot;Persons total: {}&quot;, persons.size());</span>
+
+<span class="fc bfc" id="L281" title="All 2 branches covered.">            for (int i = 0; i &lt; persons.size(); i++) {</span>
+<span class="fc" id="L282">                Person p = persons.get(i);</span>
+<span class="pc bpc" id="L283" title="2 of 6 branches missed.">                if (p != null &amp;&amp; p.getAddress() != null &amp;&amp; p.getAddress().equals(address)) {</span>
+<span class="fc" id="L284">                    personsAtAddress.add(p);</span>
+                }
+            }
+<span class="fc" id="L287">            logger.debug(&quot;Persons at address='{}': {}&quot;, address, personsAtAddress.size());</span>
+<span class="pc bpc" id="L288" title="1 of 2 branches missed.">            if (personsAtAddress.isEmpty()) {</span>
+<span class="nc" id="L289">                logger.info(&quot;childAlert -&gt; 0 resident at address '{}'&quot;, address);</span>
+<span class="nc" id="L290">                return result;</span>
+            }
+
+            // 2) For each person at the address, if a child (≤ 18), construct the DTO
+<span class="fc bfc" id="L294" title="All 2 branches covered.">            for (int i = 0; i &lt; personsAtAddress.size(); i++) {</span>
+<span class="fc" id="L295">                Person child = personsAtAddress.get(i);</span>
+
+<span class="fc" id="L297">                int age = getAge(child);</span>
+
+<span class="fc bfc" id="L299" title="All 2 branches covered.">                if (age &lt;= 18) {</span>
+<span class="fc" id="L300">                    ChildDTO dto = new ChildDTO();</span>
+<span class="fc" id="L301">                    dto.setFirstName(child.getFirstName());</span>
+<span class="fc" id="L302">                    dto.setLastName(child.getLastName());</span>
+<span class="fc" id="L303">                    dto.setAge(age);</span>
+
+                    // 3) List of other household members
+<span class="fc" id="L306">                    List&lt;FamilyMemberDTO&gt; family = new ArrayList&lt;&gt;();</span>
+
+<span class="fc bfc" id="L308" title="All 2 branches covered.">                    for (int f = 0; f &lt; personsAtAddress.size(); f++) {</span>
+<span class="fc" id="L309">                        Person familyMember = personsAtAddress.get(f);</span>
+<span class="pc bpc" id="L310" title="1 of 2 branches missed.">                        if (familyMember != null) {</span>
+<span class="pc bpc" id="L311" title="1 of 2 branches missed.">                            boolean sameFirst = familyMember.getFirstName() != null</span>
+<span class="fc bfc" id="L312" title="All 2 branches covered.">                                    &amp;&amp; familyMember.getFirstName().equals(child.getFirstName());</span>
+<span class="pc bpc" id="L313" title="1 of 2 branches missed.">                            boolean sameLast = familyMember.getLastName() != null</span>
+<span class="pc bpc" id="L314" title="1 of 2 branches missed.">                                    &amp;&amp; familyMember.getLastName().equals(child.getLastName());</span>
+
+                            // Exclude the child himself
+<span class="pc bpc" id="L317" title="1 of 4 branches missed.">                            if (!(sameFirst &amp;&amp; sameLast)) {</span>
+<span class="fc" id="L318">                                FamilyMemberDTO member = new FamilyMemberDTO();</span>
+<span class="fc" id="L319">                                member.setFirstName(familyMember.getFirstName());</span>
+<span class="fc" id="L320">                                member.setLastName(familyMember.getLastName());</span>
+
+<span class="fc" id="L322">                                family.add(member);</span>
+                            }
+                        }
+                    }
+<span class="fc" id="L326">                    dto.setFamily(family);</span>
+<span class="fc" id="L327">                    result.add(dto);</span>
+                }
+            }
+<span class="fc" id="L330">            logger.info(&quot;childAlert address='{}' -&gt; children={}&quot;, address, result.size());</span>
+<span class="fc" id="L331">            logger.debug(&quot;childAlert sample: {}&quot;, result.stream().limit(2).toList());</span>
+<span class="fc" id="L332">            return result;</span>
+
+<span class="nc" id="L334">        } catch (Exception e) {</span>
+<span class="nc" id="L335">            logger.error(&quot;childAlert FAILED for address {}: {}&quot;, address, e.getMessage(), e);</span>
+<span class="nc" id="L336">            throw e;</span>
+        }
+    }
+
+    @Override
+    public List&lt;String&gt; getPhoneByFireStation(String fireStationNumber) {
+<span class="fc" id="L342">        logger.info(&quot;PhoneAlert for station={}&quot;, fireStationNumber);</span>
+<span class="fc" id="L343">        Set&lt;String&gt; result = new HashSet&lt;&gt;();</span>
+
+        try {
+<span class="pc bpc" id="L346" title="1 of 2 branches missed.">            if (fireStationNumber == null) {</span>
+<span class="nc" id="L347">                logger.info(&quot;phoneAlert -&gt; station=null -&gt; empty result&quot;);</span>
+<span class="nc" id="L348">                return new ArrayList&lt;&gt;();</span>
+            }
+
+            // 1) Retrieve the addresses covered by the requested station
+<span class="fc" id="L352">            List&lt;String&gt; addresses = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L353">            List&lt;FireStation&gt; fireStations = fireStationService.findAll();</span>
+<span class="fc" id="L354">            logger.debug(&quot;Mappings total: {}&quot;, fireStations.size());</span>
+
+<span class="fc bfc" id="L356" title="All 2 branches covered.">            for (int f = 0; f &lt; fireStations.size(); f++) {</span>
+<span class="fc" id="L357">                FireStation fs = fireStations.get(f);</span>
+<span class="pc bpc" id="L358" title="3 of 6 branches missed.">                if (fs != null &amp;&amp; fs.getStation() != null &amp;&amp; fs.getAddress() != null) {</span>
+<span class="fc bfc" id="L359" title="All 2 branches covered.">                    if (fs.getStation().equals(fireStationNumber)) {</span>
+<span class="fc" id="L360">                        addresses.add(fs.getAddress());</span>
+                    }
+                }
+            }
+
+            // If no address is covered, we return []
+<span class="pc bpc" id="L366" title="1 of 2 branches missed.">            if (addresses.isEmpty()) {</span>
+<span class="nc" id="L367">                logger.info(&quot;phoneAlert station={} -&gt; 0 covered address&quot;, fireStationNumber);</span>
+<span class="nc" id="L368">                return new ArrayList&lt;&gt;();</span>
+            }
+<span class="fc" id="L370">            logger.debug(&quot;phoneAlert station={} covers {} addresses&quot;, fireStationNumber, addresses.size());</span>
+
+            // 2) List the people living at these addresses
+<span class="fc" id="L373">            List&lt;Person&gt; coveredPersons = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L374">            List&lt;Person&gt; persons = personRepository.findAll();</span>
+<span class="fc" id="L375">            logger.debug(&quot;Persons total: {}&quot;, persons.size());</span>
+
+<span class="fc bfc" id="L377" title="All 2 branches covered.">            for (int p = 0; p &lt; persons.size(); p++) {</span>
+<span class="fc" id="L378">                Person person = persons.get(p);</span>
+<span class="pc bpc" id="L379" title="3 of 6 branches missed.">                if (person != null &amp;&amp; person.getAddress() != null &amp;&amp; person.getPhone() != null) {</span>
+
+<span class="fc" id="L381">                    boolean isCovered = false;</span>
+<span class="fc bfc" id="L382" title="All 2 branches covered.">                    for (int a = 0; a &lt; addresses.size(); a++) {</span>
+<span class="fc bfc" id="L383" title="All 2 branches covered.">                        if (person.getAddress().equals(addresses.get(a))) {</span>
+<span class="fc" id="L384">                            isCovered = true;</span>
+<span class="fc" id="L385">                            break;</span>
+                        }
+                    }
+<span class="fc bfc" id="L388" title="All 2 branches covered.">                    if (isCovered) {</span>
+<span class="fc" id="L389">                        coveredPersons.add(person);</span>
+                    }
+                }
+            }
+
+            // 3) Extract phone numbers
+<span class="fc bfc" id="L395" title="All 2 branches covered.">            for (int i = 0; i &lt; coveredPersons.size(); i++) {</span>
+<span class="fc" id="L396">                String phone = coveredPersons.get(i).getPhone();</span>
+<span class="pc bpc" id="L397" title="1 of 2 branches missed.">                if (phone != null) {</span>
+<span class="fc" id="L398">                    result.add(phone);</span>
+                }
+            }
+
+<span class="fc" id="L402">            logger.info(&quot;phoneAlert station={} -&gt; phones={}&quot;, fireStationNumber, result.size());</span>
+<span class="fc" id="L403">            logger.debug(&quot;phoneAlert sample: {}&quot;, result.stream().limit(3).toList());</span>
+<span class="fc" id="L404">            return new ArrayList&lt;&gt;(result);</span>
+
+<span class="nc" id="L406">        } catch (Exception e) {</span>
+<span class="nc" id="L407">            logger.error(&quot;phoneAlert FAILED for station {}: {}&quot;, fireStationNumber, e.getMessage(), e);</span>
+<span class="nc" id="L408">            throw e;</span>
+        }
+    }
+
+    @Override
+    public FireAlertAddressDTO getFireAlert(String address) {
+<span class="fc" id="L414">        logger.info(&quot;FireAlert for address='{}'&quot;, address);</span>
+<span class="fc" id="L415">        FireAlertAddressDTO result = new FireAlertAddressDTO();</span>
+
+        try {
+<span class="pc bpc" id="L418" title="1 of 2 branches missed.">            if (address == null) {</span>
+<span class="nc" id="L419">                logger.info(&quot;fireAlert -&gt; address=null -&gt; empty result&quot;);</span>
+<span class="nc" id="L420">                return result;</span>
+            }
+
+        // 1) Find the station number that serves the address
+<span class="fc" id="L424">        String stationNumber = null;</span>
+<span class="fc" id="L425">        List&lt;FireStation&gt; fireStations = fireStationService.findAll();</span>
+<span class="fc" id="L426">        logger.debug(&quot;Found {} fireStation mappings&quot;, fireStations.size());</span>
+
+<span class="pc bpc" id="L428" title="1 of 2 branches missed.">        for (int f = 0; f &lt; fireStations.size(); f++) {</span>
+<span class="fc" id="L429">            FireStation fs = fireStations.get(f);</span>
+<span class="pc bpc" id="L430" title="3 of 6 branches missed.">            if (fs != null &amp;&amp; fs.getAddress() != null &amp;&amp; fs.getAddress().equals(address)) {</span>
+<span class="fc" id="L431">                stationNumber = fs.getStation();</span>
+<span class="fc" id="L432">                break;</span>
+            }
+        }
+<span class="fc" id="L435">        result.setStation(stationNumber);</span>
+
+        // 2) List the people living at this address
+<span class="fc" id="L438">        List&lt;Person&gt; persons = personRepository.findAll();</span>
+<span class="fc" id="L439">        logger.debug(&quot;Persons total: {}&quot;, persons.size());</span>
+<span class="fc" id="L440">        List&lt;FireAlertPersonDTO&gt; residents = new ArrayList&lt;FireAlertPersonDTO&gt;();</span>
+
+<span class="fc bfc" id="L442" title="All 2 branches covered.">        for (int i = 0; i &lt; persons.size(); i++) {</span>
+<span class="fc" id="L443">            Person p = persons.get(i);</span>
+<span class="pc bpc" id="L444" title="2 of 6 branches missed.">            if (p != null &amp;&amp; p.getAddress() != null &amp;&amp; p.getAddress().equals(address)) {</span>
+
+                // 3) Build the DTO for each person
+<span class="fc" id="L447">                FireAlertPersonDTO dto = new FireAlertPersonDTO();</span>
+<span class="fc" id="L448">                dto.setFirstName(p.getFirstName());</span>
+<span class="fc" id="L449">                dto.setLastName(p.getLastName());</span>
+<span class="fc" id="L450">                dto.setPhone(p.getPhone());</span>
+
+<span class="fc" id="L452">                MedicalRecord mr = medicalRecordService.get(new MedicalRecord(p.getFirstName(), p.getLastName()));</span>
+
+<span class="fc" id="L454">                int age = 0;</span>
+<span class="pc bpc" id="L455" title="2 of 4 branches missed.">                if (mr != null &amp;&amp; mr.getBirthdate() != null) {</span>
+                    try {
+<span class="fc" id="L457">                        LocalDate dob = LocalDate.parse(mr.getBirthdate(), DateTimeFormatter.ofPattern(&quot;MM/dd/yyyy&quot;));</span>
+<span class="fc" id="L458">                        age = Period.between(dob, LocalDate.now()).getYears();</span>
+<span class="pc" id="L459">                    } catch (Exception ignored) {}</span>
+                }
+<span class="fc" id="L461">                dto.setAge(age);</span>
+
+<span class="fc" id="L463">                List&lt;String&gt; meds = new ArrayList&lt;&gt;();</span>
+<span class="pc bpc" id="L464" title="2 of 4 branches missed.">                if (mr != null &amp;&amp; mr.getMedications() != null) meds.addAll(mr.getMedications());</span>
+<span class="fc" id="L465">                dto.setMedications(meds);</span>
+
+<span class="fc" id="L467">                List&lt;String&gt; allergies = new ArrayList&lt;&gt;();</span>
+<span class="pc bpc" id="L468" title="2 of 4 branches missed.">                if (mr != null &amp;&amp; mr.getAllergies() != null) allergies.addAll(mr.getAllergies());</span>
+<span class="fc" id="L469">                dto.setAllergies(allergies);</span>
+
+<span class="fc" id="L471">                residents.add(dto);</span>
+            }
+        }
+<span class="fc" id="L474">        result.setResidents(residents);</span>
+
+<span class="fc" id="L476">        logger.info(&quot;fireAlert address='{}' -&gt; residents={}&quot;, address, residents.size());</span>
+<span class="fc" id="L477">        logger.debug(&quot;fireAlert sample residents (names only): {}&quot;,</span>
+<span class="fc" id="L478">                    residents.stream().limit(2).map(r -&gt; r.getFirstName() + &quot; &quot; + r.getLastName()).toList());</span>
+<span class="fc" id="L479">        logger.debug(&quot;fireAlert medical details loaded (omitted in logs)&quot;);</span>
+<span class="fc" id="L480">        return result;</span>
+
+<span class="nc" id="L482">        } catch (Exception e) {</span>
+<span class="nc" id="L483">            logger.error(&quot;fireAlert FAILED for address {}: {}&quot;, address, e.getMessage(), e);</span>
+<span class="nc" id="L484">            throw e;</span>
+        }
+    }
+
+    @Override
+    public FloodAlertDTO getFloodAlert(List&lt;String&gt; stations) {
+<span class="fc" id="L490">        logger.info(&quot;FloodAlert for stations={}&quot;, stations);</span>
+<span class="fc" id="L491">        FloodAlertDTO result = new FloodAlertDTO();</span>
+
+        try {
+<span class="pc bpc" id="L494" title="1 of 2 branches missed.">            if (stations == null) {</span>
+<span class="nc" id="L495">                logger.info(&quot;floodAlert -&gt; stations=null -&gt; empty result&quot;);</span>
+<span class="nc" id="L496">                return result;</span>
+            }
+
+<span class="fc" id="L499">            result.setStations(stations);</span>
+
+<span class="fc" id="L501">            List&lt;FireStation&gt; fireStations = fireStationService.findAll();</span>
+<span class="fc" id="L502">            List&lt;Person&gt; persons = personRepository.findAll();</span>
+<span class="fc" id="L503">            logger.debug(&quot;Found {} fireStation mappings&quot;, fireStations.size());</span>
+<span class="fc" id="L504">            logger.debug(&quot;Persons total: {}&quot;, persons.size());</span>
+
+            // 1) Retrieve the addresses covered by each station
+<span class="fc" id="L507">            List&lt;String&gt; coveredAddresses = new ArrayList&lt;&gt;();</span>
+
+<span class="fc bfc" id="L509" title="All 2 branches covered.">            for (int s = 0; s &lt; stations.size(); s++) {</span>
+<span class="fc" id="L510">                String stationNumber = stations.get(s);</span>
+
+<span class="fc bfc" id="L512" title="All 2 branches covered.">                for (int f = 0; f &lt; fireStations.size(); f++) {</span>
+<span class="fc" id="L513">                    FireStation fs = fireStations.get(f);</span>
+<span class="pc bpc" id="L514" title="3 of 6 branches missed.">                    if (fs != null &amp;&amp; fs.getStation() != null &amp;&amp; fs.getAddress() != null</span>
+<span class="fc bfc" id="L515" title="All 2 branches covered.">                            &amp;&amp; fs.getStation().equals(stationNumber)) {</span>
+<span class="fc" id="L516">                        boolean exists = false;</span>
+<span class="fc bfc" id="L517" title="All 2 branches covered.">                        for (int a = 0; a &lt; coveredAddresses.size(); a++) {</span>
+<span class="fc bfc" id="L518" title="All 2 branches covered.">                            if (coveredAddresses.get(a).equals(fs.getAddress())) {</span>
+<span class="fc" id="L519">                                exists = true;</span>
+<span class="fc" id="L520">                                break;</span>
+                            }
+                        }
+<span class="fc bfc" id="L523" title="All 2 branches covered.">                        if (!exists) {</span>
+<span class="fc" id="L524">                            coveredAddresses.add(fs.getAddress());</span>
+                        }
+                    }
+                }
+            }
+<span class="fc" id="L529">            logger.debug(&quot;floodAlert -&gt; stations={} cover {} addresses&quot;, stations, coveredAddresses.size());</span>
+
+            // 2) For each address covered, add the residents + requested information
+<span class="fc bfc" id="L532" title="All 2 branches covered.">            for (int a = 0; a &lt; coveredAddresses.size(); a++) {</span>
+<span class="fc" id="L533">                String address = coveredAddresses.get(a);</span>
+
+<span class="fc" id="L535">                FloodAlertAddressDTO addressDTO = new FloodAlertAddressDTO();</span>
+<span class="fc" id="L536">                addressDTO.setAddress(address);</span>
+
+<span class="fc bfc" id="L538" title="All 2 branches covered.">                for (int p = 0; p &lt; persons.size(); p++) {</span>
+<span class="fc" id="L539">                    Person person = persons.get(p);</span>
+<span class="pc bpc" id="L540" title="1 of 4 branches missed.">                    if (person != null &amp;&amp; address.equals(person.getAddress())) {</span>
+
+                        // 3) Build each person's DTO
+<span class="fc" id="L543">                        FloodAlertPersonDTO personDTO = new FloodAlertPersonDTO();</span>
+<span class="fc" id="L544">                        personDTO.setFirstName(person.getFirstName());</span>
+<span class="fc" id="L545">                        personDTO.setLastName(person.getLastName());</span>
+<span class="fc" id="L546">                        personDTO.setPhone(person.getPhone());</span>
+
+<span class="fc" id="L548">                        MedicalRecord mr = medicalRecordService.get(new MedicalRecord(person.getFirstName(), person.getLastName()));</span>
+
+<span class="fc" id="L550">                        int age = 0;</span>
+<span class="pc bpc" id="L551" title="2 of 4 branches missed.">                        if (mr != null &amp;&amp; mr.getBirthdate() != null) {</span>
+                            try {
+<span class="fc" id="L553">                                LocalDate dob = LocalDate.parse(mr.getBirthdate(), DateTimeFormatter.ofPattern(&quot;MM/dd/yyyy&quot;));</span>
+<span class="fc" id="L554">                                age = Period.between(dob, LocalDate.now()).getYears();</span>
+<span class="nc" id="L555">                            } catch (Exception ignored) {</span>
+<span class="fc" id="L556">                            }</span>
+                        }
+<span class="fc" id="L558">                        personDTO.setAge(age);</span>
+
+<span class="fc" id="L560">                        List&lt;String&gt; meds = new ArrayList&lt;&gt;();</span>
+<span class="pc bpc" id="L561" title="2 of 4 branches missed.">                        if (mr != null &amp;&amp; mr.getMedications() != null) meds.addAll(mr.getMedications());</span>
+<span class="fc" id="L562">                        personDTO.setMedications(meds);</span>
+
+<span class="fc" id="L564">                        List&lt;String&gt; allergies = new ArrayList&lt;&gt;();</span>
+<span class="pc bpc" id="L565" title="2 of 4 branches missed.">                        if (mr != null &amp;&amp; mr.getAllergies() != null) allergies.addAll(mr.getAllergies());</span>
+<span class="fc" id="L566">                        personDTO.setAllergies(allergies);</span>
+
+<span class="fc" id="L568">                        addressDTO.getListPerson().add(personDTO);</span>
+                    }
+                }
+<span class="fc" id="L571">                result.getAddressList().add(addressDTO);</span>
+            }
+<span class="fc" id="L573">            logger.info(&quot;floodAlert stations={} -&gt; households={}&quot;, stations, result.getAddressList().size());</span>
+<span class="fc" id="L574">            logger.debug(&quot;floodAlert first addresses: {}&quot;,</span>
+<span class="fc" id="L575">                    result.getAddressList().stream().limit(2).map(FloodAlertAddressDTO::getAddress).toList());</span>
+<span class="fc" id="L576">            logger.debug(&quot;floodAlert medical details loaded (omitted in logs)&quot;);</span>
+<span class="fc" id="L577">            return result;</span>
+
+<span class="nc" id="L579">        } catch (Exception e) {</span>
+<span class="nc" id="L580">            logger.error(&quot;floodAlert FAILED for stations {}: {}&quot;, stations, e.getMessage(), e);</span>
+<span class="nc" id="L581">            throw e;</span>
+        }
+    }
+
+    @Override
+    public List&lt;PersonInfoDTO&gt; getPersonInfo(String lastName) {
+<span class="fc" id="L587">        logger.info(&quot;PersonInfo lastName='{}'&quot;, lastName);</span>
+<span class="fc" id="L588">        List&lt;PersonInfoDTO&gt; result = new ArrayList&lt;&gt;();</span>
+
+        try {
+<span class="pc bpc" id="L591" title="1 of 2 branches missed.">            if (lastName == null) {</span>
+<span class="nc" id="L592">                logger.info(&quot;personInfo -&gt; lastName=null -&gt; empty result&quot;);</span>
+<span class="nc" id="L593">                return result;</span>
+            }
+
+            // 1) List all people and their medical records
+<span class="fc" id="L597">        List&lt;Person&gt; persons = personRepository.findAll();</span>
+<span class="fc" id="L598">        List&lt;MedicalRecord&gt; medicalRecords = medicalRecordService.findAll();</span>
+<span class="fc" id="L599">        logger.debug(&quot;personInfo repository sizes: persons={}, medicalRecords={}&quot;,</span>
+<span class="fc" id="L600">                persons.size(), medicalRecords.size());</span>
+
+        // Pick out those with the same lastName
+<span class="fc bfc" id="L603" title="All 2 branches covered.">        for (Person person : persons) {</span>
+<span class="fc bfc" id="L604" title="All 2 branches covered.">            if (person.getLastName().equals(lastName)) {</span>
+
+                // 2) Search for the corresponding medical record
+<span class="fc" id="L607">                MedicalRecord personMedicalRecord = null;</span>
+<span class="pc bpc" id="L608" title="1 of 2 branches missed.">                for (MedicalRecord medicalRecord : medicalRecords) {</span>
+<span class="fc" id="L609">                    boolean sameFirstName = medicalRecord.getFirstName().equals(person.getFirstName());</span>
+<span class="fc" id="L610">                    boolean sameLastName = medicalRecord.getLastName().equals(person.getLastName());</span>
+
+<span class="pc bpc" id="L612" title="1 of 4 branches missed.">                    if (sameFirstName &amp;&amp; sameLastName) {</span>
+<span class="fc" id="L613">                        personMedicalRecord = medicalRecord;</span>
+<span class="fc" id="L614">                        break;</span>
+                    }
+<span class="fc" id="L616">                }</span>
+
+                // 3) Build the DTO with the person's information
+<span class="fc" id="L619">                PersonInfoDTO dto = new PersonInfoDTO();</span>
+<span class="fc" id="L620">                dto.setFirstName(person.getFirstName());</span>
+<span class="fc" id="L621">                dto.setLastName(person.getLastName());</span>
+<span class="fc" id="L622">                dto.setAddress(person.getAddress());</span>
+<span class="fc" id="L623">                dto.setAge(getAge(person));</span>
+<span class="fc" id="L624">                dto.setEmail(person.getEmail());</span>
+
+<span class="pc bpc" id="L626" title="1 of 2 branches missed.">                if (personMedicalRecord != null) {</span>
+<span class="fc" id="L627">                    dto.setMedications(personMedicalRecord.getMedications());</span>
+<span class="fc" id="L628">                    dto.setAllergies(personMedicalRecord.getAllergies());</span>
+                } else {
+<span class="nc" id="L630">                    dto.setMedications(new ArrayList&lt;&gt;());</span>
+<span class="nc" id="L631">                    dto.setAllergies(new ArrayList&lt;&gt;());</span>
+                }
+<span class="fc" id="L633">                result.add(dto);</span>
+            }
+<span class="fc" id="L635">        }</span>
+<span class="fc" id="L636">        logger.info(&quot;personInfo lastName='{}' -&gt; results={}&quot;, lastName, result.size());</span>
+<span class="fc" id="L637">        logger.debug(&quot;personInfo sample names: {}&quot;,</span>
+<span class="fc" id="L638">                result.stream().limit(2).map(x -&gt; x.getFirstName() + &quot; &quot; + x.getLastName()).toList());</span>
+<span class="fc" id="L639">        logger.debug(&quot;personInfo medical details loaded (omitted in logs)&quot;);</span>
+<span class="fc" id="L640">        return result;</span>
+
+<span class="nc" id="L642">        } catch (Exception e) {</span>
+<span class="nc" id="L643">            logger.error(&quot;personInfo FAILED for lastName {}: {}&quot;, lastName, e.getMessage(), e);</span>
+<span class="nc" id="L644">            throw e;</span>
+        }
+    }
+
+    @Override
+    public List&lt;String&gt; getEmail(String city) {
+<span class="fc" id="L650">        logger.info(&quot;CommunityEmail city='{}'&quot;, city);</span>
+<span class="fc" id="L651">        Set&lt;String&gt; result = new HashSet&lt;&gt;();</span>
+
+        try {
+<span class="pc bpc" id="L654" title="1 of 2 branches missed.">            if (city == null) {</span>
+<span class="nc" id="L655">                logger.info(&quot;communityEmail -&gt; city=null -&gt; empty result&quot;);</span>
+<span class="nc" id="L656">                return new ArrayList&lt;&gt;();</span>
+            }
+
+            // 1) List all people
+<span class="fc" id="L660">            List&lt;Person&gt; persons = personRepository.findAll();</span>
+<span class="fc" id="L661">            logger.debug(&quot;communityEmail persons total: {}&quot;, persons.size());</span>
+
+            // 2) Get the email of the residents
+<span class="fc bfc" id="L664" title="All 2 branches covered.">            for (Person person : persons) {</span>
+<span class="pc bpc" id="L665" title="1 of 2 branches missed.">                if (person.getCity().equals(city)) {</span>
+<span class="fc" id="L666">                    result.add(person.getEmail());</span>
+                }
+<span class="fc" id="L668">            }</span>
+
+<span class="fc" id="L670">        logger.info(&quot;communityEmail city='{}' -&gt; emails={}&quot;, city, result.size());</span>
+<span class="fc" id="L671">        logger.debug(&quot;communityEmail emails loaded (omitted in logs)&quot;);</span>
+<span class="fc" id="L672">        return new ArrayList&lt;&gt;(result);</span>
+
+<span class="nc" id="L674">        } catch (Exception e) {</span>
+<span class="nc" id="L675">            logger.error(&quot;communityEmail FAILED for city {}: {}&quot;, city, e.getMessage(), e);</span>
+<span class="nc" id="L676">            throw e;</span>
+        }
+    }
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

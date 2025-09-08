@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FireStationController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">SafetyNetAlerts</a> &gt; <a href="index.source.html" class="el_package">com.openclassrooms.SafetyNetAlerts.controller</a> &gt; <span class="el_source">FireStationController.java</span></div><h1>FireStationController.java</h1><pre class="source lang-java linenums">package com.openclassrooms.SafetyNetAlerts.controller;
+
+import java.util.List;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+
+import com.openclassrooms.SafetyNetAlerts.model.FireStation;
+import com.openclassrooms.SafetyNetAlerts.service.impl.FireStationServiceImpl;
+
+@RestController
+<span class="fc" id="L15">public class FireStationController {</span>
+	
+<span class="fc" id="L17">	private static Logger logger = LogManager.getLogger(FireStationController.class);</span>
+		
+	@Autowired
+	private FireStationServiceImpl fireStationService;
+	
+	@PostMapping(&quot;/firestation&quot;)
+	@ResponseStatus(code = HttpStatus.CREATED)
+	public void createFireStation(@RequestBody FireStation fireStation) {
+<span class="fc" id="L25">        logger.info(&quot;POST /firestation - add mapping {} -&gt; station {}&quot;, fireStation.getAddress(), fireStation.getStation());</span>
+<span class="fc" id="L26">        logger.debug(&quot;Payload: {}&quot;, fireStation);</span>
+        try {
+<span class="fc" id="L28">            fireStationService.add(fireStation);</span>
+<span class="fc" id="L29">            logger.info(&quot;POST /firestation -&gt; 201 Created&quot;);</span>
+<span class="fc" id="L30">        } catch (Exception e) {</span>
+<span class="fc" id="L31">            logger.error(&quot;POST /firestation FAILED for mapping {} -&gt; {}: {}&quot;, fireStation.getAddress(), fireStation.getStation(), e.getMessage(), e);</span>
+<span class="fc" id="L32">            throw e;</span>
+<span class="fc" id="L33">        }</span>
+<span class="fc" id="L34">    }</span>
+		
+	@DeleteMapping(&quot;/firestation&quot;)
+	@ResponseStatus(code = HttpStatus.OK)
+	public void deleteFireStation(@RequestBody FireStation fireStation) {
+<span class="fc" id="L39">        logger.info(&quot;DELETE /firestation - {} -&gt; station {}&quot;,</span>
+<span class="fc" id="L40">                fireStation.getAddress(), fireStation.getStation());</span>
+<span class="fc" id="L41">        logger.debug(&quot;Payload: {}&quot;, fireStation);</span>
+        try {
+<span class="fc" id="L43">            fireStationService.delete(fireStation);</span>
+<span class="fc" id="L44">            logger.info(&quot;DELETE /firestation -&gt; 200 OK&quot;);</span>
+<span class="fc" id="L45">        } catch (Exception e) {</span>
+<span class="fc" id="L46">            logger.error(&quot;DELETE /firestation FAILED for mapping {} -&gt; {}: {}&quot;,</span>
+<span class="fc" id="L47">                    fireStation.getAddress(), fireStation.getStation(), e.getMessage(), e);</span>
+<span class="fc" id="L48">            throw e;</span>
+<span class="fc" id="L49">        }</span>
+<span class="fc" id="L50">    }</span>
+		
+	@PutMapping(&quot;/firestation&quot;)
+	@ResponseStatus(code = HttpStatus.OK)
+	public void updateFireStation(@RequestBody FireStation fireStation) {
+<span class="fc" id="L55">        logger.info(&quot;PUT /firestation - {} -&gt; station {}&quot;,</span>
+<span class="fc" id="L56">                fireStation.getAddress(), fireStation.getStation());</span>
+<span class="fc" id="L57">        logger.debug(&quot;Payload: {}&quot;, fireStation);</span>
+        try {
+<span class="fc" id="L59">            fireStationService.update(fireStation);</span>
+<span class="fc" id="L60">            logger.info(&quot;PUT /firestation -&gt; 200 OK&quot;);</span>
+<span class="fc" id="L61">        } catch (Exception e) {</span>
+<span class="fc" id="L62">            logger.error(&quot;PUT /firestation FAILED for mapping {} -&gt; {}: {}&quot;,</span>
+<span class="fc" id="L63">                    fireStation.getAddress(), fireStation.getStation(), e.getMessage(), e);</span>
+<span class="fc" id="L64">            throw e;</span>
+<span class="fc" id="L65">        }</span>
+<span class="fc" id="L66">    }</span>
+		
+	@GetMapping(&quot;/firestation&quot;)
+	@ResponseStatus(code = HttpStatus.OK)
+	public FireStation getFireStation(@RequestParam(&quot;address&quot;) String address) {
+<span class="fc" id="L71">        logger.info(&quot;GET /firestation?address={}&quot;, address);</span>
+        try {
+<span class="fc" id="L73">            FireStation fireStation = fireStationService.get(new FireStation(address, null));</span>
+<span class="pc bpc" id="L74" title="1 of 2 branches missed.">            if (fireStation == null) {</span>
+<span class="nc" id="L75">                logger.info(&quot;GET /firestation -&gt; 200 OK, result=empty (address={})&quot;, address);</span>
+            } else {
+<span class="fc" id="L77">                logger.info(&quot;GET /firestation -&gt; 200 OK (found=true)&quot;);</span>
+<span class="fc" id="L78">                logger.debug(&quot;Result: {}&quot;, fireStation);</span>
+            }
+<span class="fc" id="L80">            return fireStation;</span>
+<span class="fc" id="L81">        } catch (Exception e) {</span>
+<span class="fc" id="L82">            logger.error(&quot;GET /firestation FAILED for address {}: {}&quot;, address, e.getMessage(), e);</span>
+<span class="fc" id="L83">            throw e;</span>
+        }
+    }
+		
+	@GetMapping(&quot;/firestations&quot;)
+	public List&lt;FireStation&gt; getFireStationList() {
+<span class="fc" id="L89">        logger.info(&quot;GET /firestations&quot;);</span>
+        try {
+<span class="fc" id="L91">            List&lt;FireStation&gt; list = fireStationService.findAll();</span>
+<span class="fc" id="L92">            logger.info(&quot;GET /firestations -&gt; 200 OK, count={}&quot;, list.size());</span>
+<span class="fc" id="L93">            logger.debug(&quot;First results: {}&quot;, list.stream().limit(3).toList());</span>
+<span class="fc" id="L94">            return list;</span>
+<span class="fc" id="L95">        } catch (Exception e) {</span>
+<span class="fc" id="L96">            logger.error(&quot;GET /firestations FAILED: {}&quot;, e.getMessage(), e);</span>
+<span class="fc" id="L97">            throw e;</span>
+        }
+    }
+}
+
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
