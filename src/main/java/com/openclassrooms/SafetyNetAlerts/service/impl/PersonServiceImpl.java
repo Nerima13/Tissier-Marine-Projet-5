@@ -5,7 +5,9 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.openclassrooms.SafetyNetAlerts.dto.DataDTO;
 import com.openclassrooms.SafetyNetAlerts.dto.request.childAlert.ChildDTO;
@@ -338,12 +340,12 @@ public class PersonServiceImpl implements PersonService {
     @Override
     public List<String> getPhoneByFireStation(String fireStationNumber) {
         logger.info("PhoneAlert for station={}", fireStationNumber);
-        List<String> result = new ArrayList<>();
+        Set<String> result = new HashSet<>();
 
         try {
             if (fireStationNumber == null) {
                 logger.info("phoneAlert -> station=null -> empty result");
-                return result;
+                return new ArrayList<>();
             }
 
             // 1) Retrieve the addresses covered by the requested station
@@ -363,7 +365,7 @@ public class PersonServiceImpl implements PersonService {
             // If no address is covered, we return []
             if (addresses.isEmpty()) {
                 logger.info("phoneAlert station={} -> 0 covered address", fireStationNumber);
-                return result;
+                return new ArrayList<>();
             }
             logger.debug("phoneAlert station={} covers {} addresses", fireStationNumber, addresses.size());
 
@@ -399,7 +401,7 @@ public class PersonServiceImpl implements PersonService {
 
             logger.info("phoneAlert station={} -> phones={}", fireStationNumber, result.size());
             logger.debug("phoneAlert sample: {}", result.stream().limit(3).toList());
-            return result;
+            return new ArrayList<>(result);
 
         } catch (Exception e) {
             logger.error("phoneAlert FAILED for station {}: {}", fireStationNumber, e.getMessage(), e);
@@ -646,12 +648,12 @@ public class PersonServiceImpl implements PersonService {
     @Override
     public List<String> getEmail(String city) {
         logger.info("CommunityEmail city='{}'", city);
-        List<String> result = new ArrayList<>();
+        Set<String> result = new HashSet<>();
 
         try {
             if (city == null) {
                 logger.info("communityEmail -> city=null -> empty result");
-                return result;
+                return new ArrayList<>();
             }
 
             // 1) List all people
@@ -667,7 +669,7 @@ public class PersonServiceImpl implements PersonService {
 
         logger.info("communityEmail city='{}' -> emails={}", city, result.size());
         logger.debug("communityEmail emails loaded (omitted in logs)");
-        return result;
+        return new ArrayList<>(result);
 
         } catch (Exception e) {
             logger.error("communityEmail FAILED for city {}: {}", city, e.getMessage(), e);
