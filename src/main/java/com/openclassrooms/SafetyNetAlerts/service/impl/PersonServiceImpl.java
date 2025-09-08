@@ -1,11 +1,13 @@
 package com.openclassrooms.SafetyNetAlerts.service.impl;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.openclassrooms.SafetyNetAlerts.dto.DataDTO;
 import com.openclassrooms.SafetyNetAlerts.dto.request.childAlert.ChildDTO;
 import com.openclassrooms.SafetyNetAlerts.dto.request.childAlert.FamilyMemberDTO;
 import com.openclassrooms.SafetyNetAlerts.dto.request.fireAlert.FireAlertAddressDTO;
@@ -20,6 +22,7 @@ import com.openclassrooms.SafetyNetAlerts.model.FireStation;
 import com.openclassrooms.SafetyNetAlerts.model.MedicalRecord;
 import com.openclassrooms.SafetyNetAlerts.service.FireStationService;
 import com.openclassrooms.SafetyNetAlerts.service.MedicalRecordService;
+import com.openclassrooms.SafetyNetAlerts.writer.IJsonWriter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +47,9 @@ public class PersonServiceImpl implements PersonService {
     @Qualifier("personRepoSingleton")
     private PersonRepository personRepository;
 
+    @Autowired
+    private IJsonWriter jsonWriter;
+
     @Override
     public void add(Person person) {
         logger.info("Add person {} {}", person.getFirstName(), person.getLastName());
@@ -51,6 +57,16 @@ public class PersonServiceImpl implements PersonService {
         try {
             personRepository.add(person);
             logger.info("Person added successfully: {} {}", person.getFirstName(), person.getLastName());
+
+            DataDTO dto = new DataDTO(
+                    personRepository.findAll(),
+                    fireStationService.findAll(),
+                    medicalRecordService.findAll());
+            jsonWriter.writeJsonFile(dto);
+
+        } catch (IOException e) {
+            logger.error("Failed to write data.json after add: {}", e.getMessage(), e);
+            throw new RuntimeException("Unable to write data.json", e);
         } catch (Exception e) {
             logger.error("Add person FAILED for {} {}: {}", person.getFirstName(), person.getLastName(), e.getMessage(), e);
             throw e;
@@ -63,6 +79,15 @@ public class PersonServiceImpl implements PersonService {
         try {
             personRepository.delete(person);
             logger.info("Person deleted successfully: {} {}", person.getFirstName(), person.getLastName());
+            DataDTO dto = new DataDTO(
+                    personRepository.findAll(),
+                    fireStationService.findAll(),
+                    medicalRecordService.findAll());
+            jsonWriter.writeJsonFile(dto);
+
+        } catch (IOException e) {
+            logger.error("Failed to write data.json after delete: {}", e.getMessage(), e);
+            throw new RuntimeException("Unable to write data.json", e);
         } catch (Exception e) {
             logger.error("Delete person FAILED for {} {}: {}", person.getFirstName(), person.getLastName(), e.getMessage(), e);
             throw e;
@@ -76,6 +101,16 @@ public class PersonServiceImpl implements PersonService {
         try {
             personRepository.update(person);
             logger.info("Person updated successfully: {} {}", person.getFirstName(), person.getLastName());
+
+            DataDTO dto = new DataDTO(
+                    personRepository.findAll(),
+                    fireStationService.findAll(),
+                    medicalRecordService.findAll());
+            jsonWriter.writeJsonFile(dto);
+
+        } catch (IOException e) {
+            logger.error("Failed to write data.json after update: {}", e.getMessage(), e);
+            throw new RuntimeException("Unable to write data.json", e);
         } catch (Exception e) {
             logger.error("Update person FAILED for {} {}: {}", person.getFirstName(), person.getLastName(), e.getMessage(), e);
             throw e;

@@ -1,7 +1,14 @@
 package com.openclassrooms.SafetyNetAlerts.service.impl;
 
+import java.io.IOException;
 import java.util.List;
 
+import com.openclassrooms.SafetyNetAlerts.dto.DataDTO;
+import com.openclassrooms.SafetyNetAlerts.repository.FireStationRepository;
+import com.openclassrooms.SafetyNetAlerts.repository.PersonRepository;
+import com.openclassrooms.SafetyNetAlerts.service.FireStationService;
+import com.openclassrooms.SafetyNetAlerts.service.PersonService;
+import com.openclassrooms.SafetyNetAlerts.writer.IJsonWriter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,8 +23,19 @@ import com.openclassrooms.SafetyNetAlerts.service.MedicalRecordService;
 public class MedicalRecordServiceImpl implements MedicalRecordService {
 
     private static Logger logger = LogManager.getLogger(MedicalRecordServiceImpl.class);
-	
-	@Autowired
+
+    @Autowired
+    @Qualifier("personRepoSingleton")
+    private PersonRepository personRepository;
+
+    @Autowired
+    @Qualifier("fireStationRepoSingleton")
+    private FireStationRepository fireStationRepository;
+
+    @Autowired
+    private IJsonWriter jsonWriter;
+
+    @Autowired
 	@Qualifier("medicalRecordRepoSingleton")
 	private MedicalRecordRepository medicalRecordRepository;
 
@@ -30,9 +48,18 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
             medicalRecordRepository.add(medicalRecord);
             logger.info("MedicalRecord added successfully: {} {}",
                     medicalRecord.getFirstName(), medicalRecord.getLastName());
+
+            DataDTO dto = new DataDTO(
+                    personRepository.findAll(),
+                    fireStationRepository.findAll(),
+                    medicalRecordRepository.findAll());
+            jsonWriter.writeJsonFile(dto);
+
+        } catch (IOException e) {
+            logger.error("Failed to write data.json after add: {}", e.getMessage(), e);
+            throw new RuntimeException("Unable to write data.json", e);
         } catch (Exception e) {
-            logger.error("Add medicalRecord FAILED for {} {}: {}",
-                    medicalRecord.getFirstName(), medicalRecord.getLastName(), e.getMessage(), e);
+            logger.error("Add medicalRecord FAILED for {} {}: {}", medicalRecord.getFirstName(), medicalRecord.getLastName(), e.getMessage(), e);
             throw e;
         }
     }
@@ -45,9 +72,18 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
             medicalRecordRepository.delete(medicalRecord);
             logger.info("MedicalRecord deleted successfully: {} {}",
                     medicalRecord.getFirstName(), medicalRecord.getLastName());
+
+            DataDTO dto = new DataDTO(
+                    personRepository.findAll(),
+                    fireStationRepository.findAll(),
+                    medicalRecordRepository.findAll());
+            jsonWriter.writeJsonFile(dto);
+
+        } catch (IOException e) {
+            logger.error("Failed to write data.json after delete: {}", e.getMessage(), e);
+            throw new RuntimeException("Unable to write data.json", e);
         } catch (Exception e) {
-            logger.error("Delete medicalRecord FAILED for {} {}: {}",
-                    medicalRecord.getFirstName(), medicalRecord.getLastName(), e.getMessage(), e);
+            logger.error("Delete medicalRecord FAILED for {} {}: {}", medicalRecord.getFirstName(), medicalRecord.getLastName(), e.getMessage(), e);
             throw e;
         }
     }
@@ -61,9 +97,18 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
             medicalRecordRepository.update(medicalRecord);
             logger.info("MedicalRecord updated successfully: {} {}",
                     medicalRecord.getFirstName(), medicalRecord.getLastName());
+
+            DataDTO dto = new DataDTO(
+                    personRepository.findAll(),
+                    fireStationRepository.findAll(),
+                    medicalRecordRepository.findAll());
+            jsonWriter.writeJsonFile(dto);
+
+        } catch (IOException e) {
+            logger.error("Failed to write data.json after update: {}", e.getMessage(), e);
+            throw new RuntimeException("Unable to write data.json", e);
         } catch (Exception e) {
-            logger.error("Update medicalRecord FAILED for {} {}: {}",
-                    medicalRecord.getFirstName(), medicalRecord.getLastName(), e.getMessage(), e);
+            logger.error("Update medicalRecord FAILED for {} {}: {}", medicalRecord.getFirstName(), medicalRecord.getLastName(), e.getMessage(), e);
             throw e;
         }
     }

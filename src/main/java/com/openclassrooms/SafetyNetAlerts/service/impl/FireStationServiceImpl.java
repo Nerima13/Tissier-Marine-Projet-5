@@ -1,7 +1,12 @@
 package com.openclassrooms.SafetyNetAlerts.service.impl;
 
+import java.io.IOException;
 import java.util.List;
 
+import com.openclassrooms.SafetyNetAlerts.dto.DataDTO;
+import com.openclassrooms.SafetyNetAlerts.repository.MedicalRecordRepository;
+import com.openclassrooms.SafetyNetAlerts.repository.PersonRepository;
+import com.openclassrooms.SafetyNetAlerts.writer.IJsonWriter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,10 +21,21 @@ import com.openclassrooms.SafetyNetAlerts.service.FireStationService;
 public class FireStationServiceImpl implements FireStationService {
 
     private static Logger logger = LogManager.getLogger(FireStationServiceImpl.class);
-	
-	@Autowired
-	@Qualifier("fireStationRepoSingleton")
-	private FireStationRepository fireStationRepository;
+
+    @Autowired
+    @Qualifier("fireStationRepoSingleton")
+    private FireStationRepository fireStationRepository;
+
+    @Autowired
+    @Qualifier("personRepoSingleton")
+    private PersonRepository personRepository;
+
+    @Autowired
+    @Qualifier("medicalRecordRepoSingleton")
+    private MedicalRecordRepository medicalRecordRepository;
+
+    @Autowired
+    private IJsonWriter jsonWriter;
 	
 	@Override
 	public void add(FireStation fireStation) {
@@ -30,9 +46,18 @@ public class FireStationServiceImpl implements FireStationService {
             fireStationRepository.add(fireStation);
             logger.info("FireStation mapping added successfully: {} -> {}",
                     fireStation.getAddress(), fireStation.getStation());
+
+            DataDTO dto = new DataDTO(
+                    personRepository.findAll(),
+                    fireStationRepository.findAll(),
+                    medicalRecordRepository.findAll());
+            jsonWriter.writeJsonFile(dto);
+
+        } catch (IOException e) {
+            logger.error("Failed to write data.json after add: {}", e.getMessage(), e);
+            throw new RuntimeException("Unable to write data.json", e);
         } catch (Exception e) {
-            logger.error("Add fireStation FAILED for mapping {} -> {}: {}",
-                    fireStation.getAddress(), fireStation.getStation(), e.getMessage(), e);
+            logger.error("Add fireStation FAILED for mapping {} -> {}: {}", fireStation.getAddress(), fireStation.getStation(), e.getMessage(), e);
             throw e;
         }
     }
@@ -45,9 +70,18 @@ public class FireStationServiceImpl implements FireStationService {
             fireStationRepository.delete(fireStation);
             logger.info("FireStation mapping deleted successfully: {} -> {}",
                     fireStation.getAddress(), fireStation.getStation());
+
+            DataDTO dto = new DataDTO(
+                    personRepository.findAll(),
+                    fireStationRepository.findAll(),
+                    medicalRecordRepository.findAll());
+            jsonWriter.writeJsonFile(dto);
+
+        } catch (IOException e) {
+            logger.error("Failed to write data.json after delete: {}", e.getMessage(), e);
+            throw new RuntimeException("Unable to write data.json", e);
         } catch (Exception e) {
-            logger.error("Delete fireStation FAILED for mapping {} -> {}: {}",
-                    fireStation.getAddress(), fireStation.getStation(), e.getMessage(), e);
+            logger.error("Delete fireStation FAILED for mapping {} -> {}: {}", fireStation.getAddress(), fireStation.getStation(), e.getMessage(), e);
             throw e;
         }
     }
@@ -61,9 +95,18 @@ public class FireStationServiceImpl implements FireStationService {
             fireStationRepository.update(fireStation);
             logger.info("FireStation mapping updated successfully: {} -> {}",
                     fireStation.getAddress(), fireStation.getStation());
+
+            DataDTO dto = new DataDTO(
+                    personRepository.findAll(),
+                    fireStationRepository.findAll(),
+                    medicalRecordRepository.findAll());
+            jsonWriter.writeJsonFile(dto);
+
+        } catch (IOException e) {
+            logger.error("Failed to write data.json after update: {}", e.getMessage(), e);
+            throw new RuntimeException("Unable to write data.json", e);
         } catch (Exception e) {
-            logger.error("Update fireStation FAILED for mapping {} -> {}: {}",
-                    fireStation.getAddress(), fireStation.getStation(), e.getMessage(), e);
+            logger.error("Update fireStation FAILED for mapping {} -> {}: {}", fireStation.getAddress(), fireStation.getStation(), e.getMessage(), e);
             throw e;
         }
     }
