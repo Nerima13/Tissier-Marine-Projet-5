@@ -1,14 +1,5 @@
 package com.openclassrooms.SafetyNetAlerts.service.impl;
 
-import java.io.IOException;
-import java.time.LocalDate;
-import java.time.Period;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import com.openclassrooms.SafetyNetAlerts.dto.DataDTO;
 import com.openclassrooms.SafetyNetAlerts.dto.request.childAlert.ChildDTO;
 import com.openclassrooms.SafetyNetAlerts.dto.request.childAlert.FamilyMemberDTO;
@@ -22,8 +13,11 @@ import com.openclassrooms.SafetyNetAlerts.dto.request.floodAlert.FloodAlertPerso
 import com.openclassrooms.SafetyNetAlerts.dto.request.personInfo.PersonInfoDTO;
 import com.openclassrooms.SafetyNetAlerts.model.FireStation;
 import com.openclassrooms.SafetyNetAlerts.model.MedicalRecord;
+import com.openclassrooms.SafetyNetAlerts.model.Person;
+import com.openclassrooms.SafetyNetAlerts.repository.PersonRepository;
 import com.openclassrooms.SafetyNetAlerts.service.FireStationService;
 import com.openclassrooms.SafetyNetAlerts.service.MedicalRecordService;
+import com.openclassrooms.SafetyNetAlerts.service.PersonService;
 import com.openclassrooms.SafetyNetAlerts.writer.IJsonWriter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -31,14 +25,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
-import com.openclassrooms.SafetyNetAlerts.model.Person;
-import com.openclassrooms.SafetyNetAlerts.repository.PersonRepository;
-import com.openclassrooms.SafetyNetAlerts.service.PersonService;
+import java.io.IOException;
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Service
 public class PersonServiceImpl implements PersonService {
 
     private static final Logger logger = LogManager.getLogger(PersonServiceImpl.class);
+
+    private static final int UNKNOWN_AGE = -1;
 
     @Autowired
     FireStationService fireStationService;
@@ -155,7 +156,12 @@ public class PersonServiceImpl implements PersonService {
         logger.debug("Compute age for {} {}", person.getFirstName(), person.getLastName());
         try {
             MedicalRecord medicalRecord = new MedicalRecord(person.getFirstName(), person.getLastName());
-            String birthdateAsString = medicalRecordService.get(medicalRecord).getBirthdate();
+            MedicalRecord targetRecord = medicalRecordService.get(medicalRecord);
+            if (targetRecord == null) {
+                logger.error("Could not find age for {} {}", person.getFirstName(), person.getLastName());
+                return UNKNOWN_AGE;
+            }
+            String birthdateAsString = targetRecord.getBirthdate();
             LocalDate birthdate = LocalDate.parse(birthdateAsString, DateTimeFormatter.ofPattern("MM/dd/yyyy"));
             int years = Period.between(birthdate, LocalDate.now()).getYears();
             logger.debug("Computed age for {} {} -> {}", person.getFirstName(), person.getLastName(), years);
@@ -237,6 +243,9 @@ public class PersonServiceImpl implements PersonService {
 
                     // 4) Count children (≤18) and adults
                     int age = getAge(p);
+                    if (age == UNKNOWN_AGE) {
+                        continue;
+                    }
                     if (age <= 18) {
                         nbChild++;
                     } else {
@@ -296,7 +305,7 @@ public class PersonServiceImpl implements PersonService {
 
                 int age = getAge(child);
 
-                if (age <= 18) {
+                if (age != UNKNOWN_AGE && age <= 18) {
                     ChildDTO dto = new ChildDTO();
                     dto.setFirstName(child.getFirstName());
                     dto.setLastName(child.getLastName());
@@ -420,64 +429,65 @@ public class PersonServiceImpl implements PersonService {
                 return result;
             }
 
-        // 1) Find the station number that serves the address
-        String stationNumber = null;
-        List<FireStation> fireStations = fireStationService.findAll();
-        logger.debug("Found {} fireStation mappings", fireStations.size());
+            // 1) Find the station number that serves the address
+            String stationNumber = null;
+            List<FireStation> fireStations = fireStationService.findAll();
+            logger.debug("Found {} fireStation mappings", fireStations.size());
 
-        for (int f = 0; f < fireStations.size(); f++) {
-            FireStation fs = fireStations.get(f);
-            if (fs != null && fs.getAddress() != null && fs.getAddress().equals(address)) {
-                stationNumber = fs.getStation();
-                break;
-            }
-        }
-        result.setStation(stationNumber);
-
-        // 2) List the people living at this address
-        List<Person> persons = personRepository.findAll();
-        logger.debug("Persons total: {}", persons.size());
-        List<FireAlertPersonDTO> residents = new ArrayList<FireAlertPersonDTO>();
-
-        for (int i = 0; i < persons.size(); i++) {
-            Person p = persons.get(i);
-            if (p != null && p.getAddress() != null && p.getAddress().equals(address)) {
-
-                // 3) Build the DTO for each person
-                FireAlertPersonDTO dto = new FireAlertPersonDTO();
-                dto.setFirstName(p.getFirstName());
-                dto.setLastName(p.getLastName());
-                dto.setPhone(p.getPhone());
-
-                MedicalRecord mr = medicalRecordService.get(new MedicalRecord(p.getFirstName(), p.getLastName()));
-
-                int age = 0;
-                if (mr != null && mr.getBirthdate() != null) {
-                    try {
-                        LocalDate dob = LocalDate.parse(mr.getBirthdate(), DateTimeFormatter.ofPattern("MM/dd/yyyy"));
-                        age = Period.between(dob, LocalDate.now()).getYears();
-                    } catch (Exception ignored) {}
+            for (int f = 0; f < fireStations.size(); f++) {
+                FireStation fs = fireStations.get(f);
+                if (fs != null && fs.getAddress() != null && fs.getAddress().equals(address)) {
+                    stationNumber = fs.getStation();
+                    break;
                 }
-                dto.setAge(age);
-
-                List<String> meds = new ArrayList<>();
-                if (mr != null && mr.getMedications() != null) meds.addAll(mr.getMedications());
-                dto.setMedications(meds);
-
-                List<String> allergies = new ArrayList<>();
-                if (mr != null && mr.getAllergies() != null) allergies.addAll(mr.getAllergies());
-                dto.setAllergies(allergies);
-
-                residents.add(dto);
             }
-        }
-        result.setResidents(residents);
+            result.setStation(stationNumber);
 
-        logger.info("fireAlert address='{}' -> residents={}", address, residents.size());
-        logger.debug("fireAlert sample residents (names only): {}",
+            // 2) List the people living at this address
+            List<Person> persons = personRepository.findAll();
+            logger.debug("Persons total: {}", persons.size());
+            List<FireAlertPersonDTO> residents = new ArrayList<FireAlertPersonDTO>();
+
+            for (int i = 0; i < persons.size(); i++) {
+                Person p = persons.get(i);
+                if (p != null && p.getAddress() != null && p.getAddress().equals(address)) {
+
+                    // 3) Build the DTO for each person
+                    FireAlertPersonDTO dto = new FireAlertPersonDTO();
+                    dto.setFirstName(p.getFirstName());
+                    dto.setLastName(p.getLastName());
+                    dto.setPhone(p.getPhone());
+
+                    MedicalRecord mr = medicalRecordService.get(new MedicalRecord(p.getFirstName(), p.getLastName()));
+
+                    int age = 0;
+                    if (mr != null && mr.getBirthdate() != null) {
+                        try {
+                            LocalDate dob = LocalDate.parse(mr.getBirthdate(), DateTimeFormatter.ofPattern("MM/dd/yyyy"));
+                            age = Period.between(dob, LocalDate.now()).getYears();
+                        } catch (Exception ignored) {
+                        }
+                    }
+                    dto.setAge(age);
+
+                    List<String> meds = new ArrayList<>();
+                    if (mr != null && mr.getMedications() != null) meds.addAll(mr.getMedications());
+                    dto.setMedications(meds);
+
+                    List<String> allergies = new ArrayList<>();
+                    if (mr != null && mr.getAllergies() != null) allergies.addAll(mr.getAllergies());
+                    dto.setAllergies(allergies);
+
+                    residents.add(dto);
+                }
+            }
+            result.setResidents(residents);
+
+            logger.info("fireAlert address='{}' -> residents={}", address, residents.size());
+            logger.debug("fireAlert sample residents (names only): {}",
                     residents.stream().limit(2).map(r -> r.getFirstName() + " " + r.getLastName()).toList());
-        logger.debug("fireAlert medical details loaded (omitted in logs)");
-        return result;
+            logger.debug("fireAlert medical details loaded (omitted in logs)");
+            return result;
 
         } catch (Exception e) {
             logger.error("fireAlert FAILED for address {}: {}", address, e.getMessage(), e);
@@ -594,50 +604,53 @@ public class PersonServiceImpl implements PersonService {
             }
 
             // 1) List all people and their medical records
-        List<Person> persons = personRepository.findAll();
-        List<MedicalRecord> medicalRecords = medicalRecordService.findAll();
-        logger.debug("personInfo repository sizes: persons={}, medicalRecords={}",
-                persons.size(), medicalRecords.size());
+            List<Person> persons = personRepository.findAll();
+            List<MedicalRecord> medicalRecords = medicalRecordService.findAll();
+            logger.debug("personInfo repository sizes: persons={}, medicalRecords={}",
+                    persons.size(), medicalRecords.size());
 
-        // Pick out those with the same lastName
-        for (Person person : persons) {
-            if (person.getLastName().equals(lastName)) {
+            // Pick out those with the same lastName
+            for (Person person : persons) {
+                if (person.getLastName().equals(lastName)) {
 
-                // 2) Search for the corresponding medical record
-                MedicalRecord personMedicalRecord = null;
-                for (MedicalRecord medicalRecord : medicalRecords) {
-                    boolean sameFirstName = medicalRecord.getFirstName().equals(person.getFirstName());
-                    boolean sameLastName = medicalRecord.getLastName().equals(person.getLastName());
+                    // 2) Search for the corresponding medical record
+                    MedicalRecord personMedicalRecord = null;
+                    for (MedicalRecord medicalRecord : medicalRecords) {
+                        boolean sameFirstName = medicalRecord.getFirstName().equals(person.getFirstName());
+                        boolean sameLastName = medicalRecord.getLastName().equals(person.getLastName());
 
-                    if (sameFirstName && sameLastName) {
-                        personMedicalRecord = medicalRecord;
-                        break;
+                        if (sameFirstName && sameLastName) {
+                            personMedicalRecord = medicalRecord;
+                            break;
+                        }
                     }
-                }
 
-                // 3) Build the DTO with the person's information
-                PersonInfoDTO dto = new PersonInfoDTO();
-                dto.setFirstName(person.getFirstName());
-                dto.setLastName(person.getLastName());
-                dto.setAddress(person.getAddress());
-                dto.setAge(getAge(person));
-                dto.setEmail(person.getEmail());
+                    // 3) Build the DTO with the person's information
+                    PersonInfoDTO dto = new PersonInfoDTO();
+                    dto.setFirstName(person.getFirstName());
+                    dto.setLastName(person.getLastName());
+                    dto.setAddress(person.getAddress());
+                    int age = getAge(person);
+                    if (age != UNKNOWN_AGE) {
+                        dto.setAge(age);
+                    }
+                    dto.setEmail(person.getEmail());
 
-                if (personMedicalRecord != null) {
-                    dto.setMedications(personMedicalRecord.getMedications());
-                    dto.setAllergies(personMedicalRecord.getAllergies());
-                } else {
-                    dto.setMedications(new ArrayList<>());
-                    dto.setAllergies(new ArrayList<>());
+                    if (personMedicalRecord != null) {
+                        dto.setMedications(personMedicalRecord.getMedications());
+                        dto.setAllergies(personMedicalRecord.getAllergies());
+                    } else {
+                        dto.setMedications(new ArrayList<>());
+                        dto.setAllergies(new ArrayList<>());
+                    }
+                    result.add(dto);
                 }
-                result.add(dto);
             }
-        }
-        logger.info("personInfo lastName='{}' -> results={}", lastName, result.size());
-        logger.debug("personInfo sample names: {}",
-                result.stream().limit(2).map(x -> x.getFirstName() + " " + x.getLastName()).toList());
-        logger.debug("personInfo medical details loaded (omitted in logs)");
-        return result;
+            logger.info("personInfo lastName='{}' -> results={}", lastName, result.size());
+            logger.debug("personInfo sample names: {}",
+                    result.stream().limit(2).map(x -> x.getFirstName() + " " + x.getLastName()).toList());
+            logger.debug("personInfo medical details loaded (omitted in logs)");
+            return result;
 
         } catch (Exception e) {
             logger.error("personInfo FAILED for lastName {}: {}", lastName, e.getMessage(), e);
@@ -667,9 +680,9 @@ public class PersonServiceImpl implements PersonService {
                 }
             }
 
-        logger.info("communityEmail city='{}' -> emails={}", city, result.size());
-        logger.debug("communityEmail emails loaded (omitted in logs)");
-        return new ArrayList<>(result);
+            logger.info("communityEmail city='{}' -> emails={}", city, result.size());
+            logger.debug("communityEmail emails loaded (omitted in logs)");
+            return new ArrayList<>(result);
 
         } catch (Exception e) {
             logger.error("communityEmail FAILED for city {}: {}", city, e.getMessage(), e);
